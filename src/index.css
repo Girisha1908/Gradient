@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+  --font-serif: "Instrument Serif", serif;
+  --font-geist: "Geist Sans", "Inter", sans-serif;
+
+  --color-primary: #5b5e6b;
+  --color-on-primary: #f8f7ff;
+  --color-primary-container: #e0e1f1;
+  --color-primary-dim: #4f525f;
+  --color-secondary: #5f5f62;
+  --color-surface: #f9f9f9;
+  --color-on-surface: #2d3435;
+  --color-on-surface-variant: #5a6061;
+  --color-on-background: #2d3435;
+  --color-outline: #757c7d;
+  --color-outline-variant: #adb3b4;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f4;
+  --color-surface-container: #ebeeef;
+  --color-surface-container-high: #e4e9ea;
+  --color-surface-container-highest: #dde4e5;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+}
+
+/* Material Icons */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Hero Video Background */
+.hero-video-container {
+    transform: scaleY(-1);
+}
+
+.hero-gradient-overlay {
+    background: linear-gradient(180deg, rgba(255,255,255,0) 26.416%, rgba(255,255,255,1) 66.943%);
+}
+
+/* CTA Buttons */
+.tactile-cta {
+    background: linear-gradient(180deg, #5b5e6b 0%, #4f525f 100%);
+    box-shadow: inset -4px -6px 25px 0px rgba(201,201,201,0.08), inset 4px 4px 10px 0px rgba(29,29,29,0.24);
+}
+
+.input-shadow {
+    box-shadow: 0px 10px 40px 5px rgba(194,194,194,0.25);
+}
+
+/* Auth Page Geist Typography */
+.geist-medium {
+    font-family: "Geist Sans", "Inter", sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+}
+
+/* Auth Card Shadow */
+.editorial-shadow {
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08);
+}
+
+.btn-editorial-shadow {
+    box-shadow: inset -4px -6px 25px 0px rgba(201, 201, 201, 0.08), inset 4px 4px 10px 0px rgba(29, 29, 29, 0.24);
+}
+
+/* Auth Stagger Animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger > * {
+    opacity: 0;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+
+/* Dashboard Sidebar */
+.dashboard-sidebar-shadow {
+    box-shadow: 1px 0 0 0 rgba(0,0,0,0.03);
+}

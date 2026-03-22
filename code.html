@@ -1,0 +1,278 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Gradient — Simple Management for Remote Teams</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "error-container": "#fe8983",
+              "on-secondary-fixed-variant": "#5b5b5f",
+              "on-error": "#fff7f6",
+              "on-tertiary-fixed-variant": "#59526e",
+              "on-primary-container": "#4e515e",
+              "error": "#9f403d",
+              "secondary-fixed": "#e4e2e6",
+              "surface": "#f9f9f9",
+              "tertiary-fixed-dim": "#d0c7e8",
+              "on-surface-variant": "#5a6061",
+              "on-error-container": "#752121",
+              "primary-fixed": "#e0e1f1",
+              "secondary": "#5f5f62",
+              "secondary-fixed-dim": "#d5d3d8",
+              "on-secondary-container": "#515155",
+              "surface-container-lowest": "#ffffff",
+              "background": "#f9f9f9",
+              "on-secondary": "#faf8fc",
+              "inverse-surface": "#0c0f0f",
+              "primary": "#5b5e6b",
+              "primary-dim": "#4f525f",
+              "on-tertiary-container": "#4f4964",
+              "inverse-primary": "#ebedfd",
+              "on-background": "#2d3435",
+              "on-secondary-fixed": "#3f3f43",
+              "secondary-container": "#e4e2e6",
+              "surface-variant": "#dde4e5",
+              "on-primary-fixed-variant": "#585b68",
+              "tertiary-dim": "#564f6b",
+              "surface-container-low": "#f2f4f4",
+              "inverse-on-surface": "#9c9d9d",
+              "on-primary": "#f8f7ff",
+              "on-primary-fixed": "#3c3f4b",
+              "error-dim": "#4e0309",
+              "surface-bright": "#f9f9f9",
+              "tertiary-container": "#dfd5f7",
+              "surface-tint": "#5b5e6b",
+              "primary-fixed-dim": "#d2d3e3",
+              "on-tertiary-fixed": "#3c3650",
+              "surface-container-highest": "#dde4e5",
+              "on-surface": "#2d3435",
+              "tertiary-fixed": "#dfd5f7",
+              "secondary-dim": "#535356",
+              "tertiary": "#625b77",
+              "on-tertiary": "#fdf7ff",
+              "outline": "#757c7d",
+              "surface-dim": "#d3dbdd",
+              "outline-variant": "#adb3b4",
+              "surface-container-high": "#e4e9ea",
+              "primary-container": "#e0e1f1",
+              "surface-container": "#ebeeef"
+            },
+            fontFamily: {
+              "headline": ["Manrope", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"],
+              "serif": ["Instrument Serif", "serif"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-video-container {
+            transform: scaleY(-1);
+        }
+        .hero-gradient-overlay {
+            background: linear-gradient(180deg, rgba(255,255,255,0) 26.416%, rgba(255,255,255,1) 66.943%);
+        }
+        .tactile-cta {
+            background: linear-gradient(180deg, #5b5e6b 0%, #4f525f 100%);
+            box-shadow: inset -4px -6px 25px 0px rgba(201,201,201,0.08), inset 4px 4px 10px 0px rgba(29,29,29,0.24);
+        }
+        .input-shadow {
+            box-shadow: 0px 10px 40px 5px rgba(194,194,194,0.25);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-slate-800 dark:text-white" style="">Gradient</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-sans text-sm font-medium tracking-tight text-slate-900 dark:text-white font-semibold border-b-2 border-slate-800 dark:border-white pb-1" href="#" style="">Features</a>
+<a class="font-sans text-sm font-medium tracking-tight text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors" href="#" style="">Pricing</a>
+<a class="font-sans text-sm font-medium tracking-tight text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors" href="#" style="">About</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="font-sans text-sm font-medium tracking-tight text-slate-700 dark:text-slate-200 hover:opacity-80 transition-opacity" style="">Sign In</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-full font-sans text-sm font-medium tracking-tight hover:opacity-80 transition-opacity" style="">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative min-h-screen flex flex-col items-center overflow-hidden pt-[290px]">
+<!-- Video Background Layer -->
+<div class="absolute inset-0 z-0">
+<video autoplay="" class="w-full h-full object-cover hero-video-container" data-alt="Abstract fluid flowing silk texture animation" loop="" muted="" playsinline="">
+<source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4" type="video/mp4">
+</video>
+<div class="absolute inset-0 hero-gradient-overlay"></div>
+</div>
+<!-- Content Layer -->
+<div class="relative z-10 max-w-[1200px] w-full px-6 flex flex-col items-center gap-[32px] text-center">
+<h1 class="font-headline text-[80px] leading-[1.05] tracking-[-0.03em] text-on-background" style="">Track Work. Not Just Tasks.</h1>
+<p class="font-body text-[18px] leading-[1.6] text-[#373a46] opacity-80 max-w-[554px]" style="">Assign tasks, track progress, review deliverables, and measure performance, all from a single platform designed for modern teams.</p>
+<div class="flex flex-col items-center gap-6 w-full max-w-[480px]">
+<div class="w-full p-1 pl-6 bg-[#fcfcfc] border border-outline-variant/20 rounded-[40px] flex items-center gap-2 input-shadow">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline-variant text-sm" placeholder="Enter your work email" type="email">
+<button class="tactile-cta text-on-primary px-8 py-3.5 rounded-full text-sm font-semibold tracking-tight transition-transform active:scale-95" style="">
+                        Create Free Account
+                    </button>
+</div>
+<div class="flex items-center gap-4 text-xs font-label tracking-widest uppercase text-on-surface-variant/60">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-white flex items-center justify-center overflow-hidden">
+<img alt="User 1" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD38yuCziNdyplC1BmfR60rHiKU4TJ71s2X1FKBGp-GCLVdb-aT5153D-L_cWgmQE8Dmmy30q3-bLfSnSFl1M0rHhbm-FnARWqPghrW0n_jLG-HZTbUWMk0MppTNO3VwE3uPO9kXp4Hn51G85BpjF4kcuFUYEKO9RusThFMqN-6vJMPqR_Q9fwLXAhPVV_nLmF330FJjoTBe3-ES3KnoXLsaIS5Oo2-uucXdF6mVGLaylZeBHclXPaSQJ9wejeWDvzAEhJK1WOzN0aa" style="">
+</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-white flex items-center justify-center overflow-hidden">
+<img alt="User 2" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkxJ7pS35tywPDGwk8cEoGPdvKgHHlHdGOlpCxI1ko-obOvR1_ItDfJJMAFLWZ0Qi-TTkn_2z-al-9v6bqDwnN1ZnDvTjkVw68S5wgZn9QiX-BrUMC3fZTBmKW6afgNHeNHzZrs4zxhA8Thd3GxoSPnRWWFwdG8XjSuAhqNGgL72waGv2tsQngNKpUo3CDerFx73QdMHSU1buZhJ243XTETUPd5YaI2x-pukm_dqwXQ0xQxCn7RA2wRnW2vLlG2WCh507SZ8JZBzqG" style="">
+</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-white flex items-center justify-center overflow-hidden">
+<img alt="User 3" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQsX_Ic6BnbwG1SKdaQ9GE9BsBH8NWSf9E71zEIV1Tk13xqgT6EHHAOxrcNS0JQgS2Lt3SBTOxI0v1TMSatuNfedZidOOeE4iBmyhC_GmwtSCxQPLz_5JNZgnrmElndkAz6hY-D6LfyO7AcRLJNo72UK-MS-Xjv_XWbhPyT0_BM-0-g6QMoGNGSOijQSDo2O6HYX1V1_CHLsW70Fe_JMyX4k2b0j_ekcdCzQZNsd4invADqOnMP9NJLNAU2kz_5jNoiTg29x1i-MtE" style="">
+</div>
+</div>
+<span class="" style="">1,020+ Reviews</span>
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: &quot;FILL&quot; 1;">star</span>
+</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="py-24 bg-surface">
+<div class="max-w-7xl mx-auto px-6">
+<p class="text-center text-[10px] uppercase tracking-[0.2em] text-outline-variant mb-12 font-semibold" style="">Trusted by leading architectural teams</p>
+<div class="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-40 grayscale contrast-125">
+<div class="text-xl font-bold tracking-tighter" style="">LUME</div>
+<div class="text-xl font-bold tracking-tighter" style="">ORBIT</div>
+<div class="text-xl font-bold tracking-tighter" style="">VERTEX</div>
+<div class="text-xl font-bold tracking-tighter" style="">NEXUS</div>
+<div class="text-xl font-bold tracking-tighter" style="">PRISM</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-32 bg-surface">
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
+<!-- Card 1 -->
+<div class="group p-8 rounded-xl transition-all duration-500 hover:bg-surface-container-lowest">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-8 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="track_changes" style="">track_changes</span>
+</div>
+<h3 class="font-headline text-xl mb-4 tracking-tight" style="">Precision Tracking</h3>
+<p class="text-on-surface-variant leading-relaxed text-sm" style="">Every heartbeat of your project monitored with sub-second accuracy. No more estimation guesswork.</p>
+</div>
+<!-- Card 2 -->
+<div class="group p-8 rounded-xl transition-all duration-500 hover:bg-surface-container-lowest">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-8 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="public" style="">public</span>
+</div>
+<h3 class="font-headline text-xl mb-4 tracking-tight" style="">Global Alignment</h3>
+<p class="text-on-surface-variant leading-relaxed text-sm" style="">Sync cross-continental teams with intelligent time-zone buffers and cultural-aware scheduling.</p>
+</div>
+<!-- Card 3 -->
+<div class="group p-8 rounded-xl transition-all duration-500 hover:bg-surface-container-lowest">
+<div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center mb-8 group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome" style="">auto_awesome</span>
+</div>
+<h3 class="font-headline text-xl mb-4 tracking-tight" style="">Intelligent Workflows</h3>
+<p class="text-on-surface-variant leading-relaxed text-sm" style="">Self-correcting pipelines that learn from your team's velocity to prevent burnout before it starts.</p>
+</div>
+</div>
+</section>
+<!-- Workflow Section -->
+<section class="py-32 bg-surface-container-low">
+<div class="max-w-7xl mx-auto px-6 text-center mb-20">
+<span class="label-sm uppercase tracking-widest text-primary/60 font-semibold text-xs" style="">The Methodology</span>
+<h2 class="font-headline text-4xl mt-4 tracking-tight" style="">Seamless progression from <span class="font-serif italic font-normal" style="">idea</span> to impact</h2>
+</div>
+<div class="max-w-5xl mx-auto px-6">
+<div class="relative flex justify-between items-start">
+<!-- Progress Line -->
+<div class="absolute top-6 left-0 w-full h-[1px] bg-outline-variant/30 z-0"></div>
+<!-- Steps -->
+<div class="relative z-10 flex flex-col items-center gap-4 text-center group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center font-serif italic text-lg shadow-sm group-hover:scale-110 transition-transform" style="">1</div>
+<div>
+<div class="font-headline text-sm font-bold tracking-tight mb-1" style="">Assign</div>
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest" style="">Initialization</div>
+</div>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-4 text-center group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center font-serif italic text-lg shadow-sm group-hover:scale-110 transition-transform" style="">2</div>
+<div>
+<div class="font-headline text-sm font-bold tracking-tight mb-1" style="">Submit</div>
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest" style="">Development</div>
+</div>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-4 text-center group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center font-serif italic text-lg shadow-sm group-hover:scale-110 transition-transform" style="">3</div>
+<div>
+<div class="font-headline text-sm font-bold tracking-tight mb-1" style="">Review</div>
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest" style="">Quality Assurance</div>
+</div>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-4 text-center group">
+<div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-serif italic text-lg shadow-lg group-hover:scale-110 transition-transform" style="">4</div>
+<div>
+<div class="font-headline text-sm font-bold tracking-tight mb-1" style="">Complete</div>
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest" style="">Deployment</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial Section -->
+<section class="py-48 bg-surface">
+<div class="max-w-4xl mx-auto px-6 text-center">
+<div class="mb-12">
+<span class="material-symbols-outlined text-primary/30 text-5xl" style="font-variation-settings: &quot;FILL&quot; 1;">format_quote</span>
+</div>
+<blockquote class="font-serif italic text-4xl md:text-5xl leading-[1.3] text-on-background mb-12" style="">
+                "Gradient has transformed our asynchronous culture from a chaotic mess into a <span class="text-primary-dim" style="">perfectly curated</span> symphony of productivity. It is quite literally the only tool we use for management."
+            </blockquote>
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-4 grayscale">
+<img alt="Marcus Chen" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY9WUT7g_i6Reb4nzK8VPWzjsXzj9-X-PUOkcphTAaQMuZgylbnpWYJQnnzU1VlZaTazIsoWHihMDCJbwULGHPA8Osll1YKSXcAvspbYsetTyKwGCRxS3uLRgsKgH8KJOowZjwSXVyERQkbJ0rOxSZnmbumCxvohLthcDf9exxGGPIUi7fW-8j0uMvzK5SNvwc4YyV1YGmxUQUvZaoIAPn7JrkzDH8KXz1g-dirHxU3_h9gSOYT1zfKcU7-ZMYdCTNj0t3TreXZK3t" style="">
+</div>
+<div class="font-headline text-sm font-bold tracking-tight" style="">Marcus Chen</div>
+<div class="text-[11px] text-on-surface-variant uppercase tracking-widest mt-1" style="">VP of Engineering, Orbit Global</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-12 border-t border-slate-100 dark:border-slate-900 bg-slate-50 dark:bg-slate-950">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-8 max-w-7xl mx-auto gap-6">
+<div class="text-lg font-bold tracking-tighter text-slate-800 dark:text-white" style="">Gradient</div>
+<div class="flex gap-8">
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors" href="#" style="">Privacy</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors" href="#" style="">Terms</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors" href="#" style="">Security</a>
+<a class="font-sans text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors" href="#" style="">Status</a>
+</div>
+<div class="font-sans text-xs uppercase tracking-widest text-slate-600 dark:text-slate-400" style="">
+                © 2024 Gradient. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

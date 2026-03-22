@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TaskFlow | Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Using Geist via Fontshare/similar or Google if available, standardizing on Inter/Sans-serif fallback if not directly linked, but will use 'Geist' in font-family as requested -->
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1d1d1d",
+              "on-surface": "#121212",
+              "on-surface-variant": "#373a46",
+              "outline-variant": "#e2e2e2",
+            },
+            fontFamily: {
+              "geist": ["Geist Sans", "Inter", "sans-serif"],
+              "serif-italic": ["Instrument Serif", "serif"],
+            },
+            letterSpacing: {
+              "tightest": "-0.04em",
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+        }
+        body {
+            font-family: 'Geist Sans', sans-serif;
+            color: #121212;
+            overflow-x: hidden;
+        }
+        .geist-medium {
+            font-weight: 500;
+            letter-spacing: -0.04em;
+        }
+        .editorial-shadow {
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08);
+        }
+        .btn-editorial-shadow {
+            box-shadow: inset -4px -6px 25px 0px rgba(201, 201, 201, 0.08), inset 4px 4px 10px 0px rgba(29, 29, 29, 0.24);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-stagger > * {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+        .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+        .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+        .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-black selection:text-white">
+<!-- Background & Video Overlay -->
+<div class="fixed inset-0 -z-20 w-full h-full bg-white">
+<video autoplay="" class="w-full h-full object-cover [transform:scaleY(-1)]" loop="" muted="" playsinline="">
+<source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4" type="video/mp4"/>
+</video>
+<div class="absolute inset-0 bg-gradient-to-b from-[26.416%] from-[rgba(255,255,255,0)] to-[66.943%] to-white"></div>
+</div>
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-8 md:px-16 h-24">
+<div class="text-xl font-geist font-bold tracking-tightest" style="">Gradient</div>
+<div class="hidden md:flex gap-10 items-center">
+<a class="geist-medium text-sm text-on-surface hover:opacity-60 transition-opacity" href="#" style="">Features</a>
+<a class="geist-medium text-sm text-on-surface hover:opacity-60 transition-opacity" href="#" style="">Solutions</a>
+<a class="geist-medium text-sm text-on-surface hover:opacity-60 transition-opacity" href="#" style="">Pricing</a>
+</div>
+<div class="flex items-center gap-6">
+<button class="geist-medium text-sm" style="">Sign In</button>
+<button class="geist-medium text-sm bg-black text-white px-6 py-2.5 rounded-full hover:bg-zinc-800 transition-colors" style="">Get Started</button>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center pt-32 pb-20 px-6">
+<div class="max-w-[480px] w-full animate-stagger">
+<!-- Heading Section -->
+<div class="text-center mb-16">
+<h1 class="font-geist text-5xl md:text-6xl font-medium tracking-tightest leading-[1.1] mb-6" style="">
+                Simple <span class="font-serif-italic italic font-normal px-1" style="">management</span> for your team
+            </h1>
+<p class="font-geist text-[18px] opacity-80 text-on-surface-variant geist-medium max-w-sm mx-auto" style="">
+                Access your dashboard and stay in flow with your team's velocity.
+            </p>
+</div>
+<!-- Auth Card -->
+<div class="bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-10 editorial-shadow">
+<form class="space-y-8">
+<!-- Email Field -->
+<div class="relative group">
+<label class="block geist-medium text-[10px] uppercase tracking-widest text-on-surface-variant/60 mb-2" style="">Work Email</label>
+<input class="w-full bg-transparent border-0 border-b border-black/10 py-3 font-geist geist-medium text-lg focus:ring-0 focus:border-black transition-all placeholder:text-zinc-300" placeholder="name@company.com" type="email"/>
+</div>
+<!-- Password Field -->
+<div class="relative group">
+<label class="block geist-medium text-[10px] uppercase tracking-widest text-on-surface-variant/60 mb-2" style="">Security Key</label>
+<input class="w-full bg-transparent border-0 border-b border-black/10 py-3 font-geist geist-medium text-lg focus:ring-0 focus:border-black transition-all placeholder:text-zinc-300" placeholder="••••••••" type="password"/>
+</div>
+<!-- Role Selection -->
+<div class="space-y-4">
+<label class="block geist-medium text-[10px] uppercase tracking-widest text-on-surface-variant/60" style="">Access Role</label>
+<div class="grid grid-cols-3 gap-3">
+<label class="cursor-pointer" style="">
+<input checked="" class="hidden peer" name="role" type="radio" value="admin"/>
+<div class="text-center py-3 rounded-xl border border-zinc-100 text-[13px] geist-medium text-zinc-500 bg-white/50 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-all duration-300" style="">
+                                Admin
+                            </div>
+</label>
+<label class="cursor-pointer" style="">
+<input class="hidden peer" name="role" type="radio" value="manager"/>
+<div class="text-center py-3 rounded-xl border border-zinc-100 text-[13px] geist-medium text-zinc-500 bg-white/50 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-all duration-300" style="">
+                                Manager
+                            </div>
+</label>
+<label class="cursor-pointer" style="">
+<input class="hidden peer" name="role" type="radio" value="employee"/>
+<div class="text-center py-3 rounded-xl border border-zinc-100 text-[13px] geist-medium text-zinc-500 bg-white/50 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-all duration-300" style="">
+                                Staff
+                            </div>
+</label>
+</div>
+</div>
+<!-- CTA -->
+<div class="pt-4">
+<button class="w-full bg-gradient-to-br from-zinc-800 to-black text-white font-geist font-bold py-5 rounded-2xl btn-editorial-shadow hover:opacity-90 transition-all duration-300 transform active:scale-[0.99] uppercase text-xs tracking-widest" style="" type="submit">
+                        Log In
+                    </button>
+<div class="my-8 flex items-center gap-4">
+<div class="flex-grow h-px bg-black/5"></div>
+<span class="text-[10px] geist-medium uppercase tracking-[0.2em] text-on-surface-variant/40 whitespace-nowrap">or continue with</span>
+<div class="flex-grow h-px bg-black/5"></div>
+</div>
+<button class="w-full flex items-center justify-center gap-3 bg-white/60 backdrop-blur-md border border-white/80 py-4 rounded-2xl hover:bg-white transition-all duration-300 group" type="button">
+<svg class="w-5 h-5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="text-[11px] geist-medium uppercase tracking-widest text-on-surface-variant">Sign in with Google</span>
+</button>
+<div class="flex justify-between items-center mt-6 text-[11px] geist-medium uppercase tracking-widest">
+<a class="text-on-surface-variant/40 hover:text-black transition-colors" href="#" style="">Forgot Access?</a>
+<a class="text-black hover:opacity-60 transition-opacity" href="#" style="">Create Account</a>
+</div>
+</div>
+</form>
+</div>
+<!-- Social Auth -->
+<div class="mt-12 grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-white/50 border border-white py-4 rounded-2xl hover:bg-white transition-all group" style="">
+<span class="material-symbols-outlined text-[18px]" style="">terminal</span>
+<span class="text-[10px] geist-medium uppercase tracking-widest" style="">SSO Gateway</span>
+</button>
+<button class="flex items-center justify-center gap-2 bg-white/50 border border-white py-4 rounded-2xl hover:bg-white transition-all group" style="">
+<span class="material-symbols-outlined text-[18px]" style="">passkey</span>
+<span class="text-[10px] geist-medium uppercase tracking-widest" style="">Passkey</span>
+</button>
+</div>
+</div>
+</main>
+<footer class="w-full py-12 px-8 md:px-16 border-t border-zinc-100 bg-white/80">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div>
+<span class="font-geist font-bold text-black text-lg tracking-tightest" style="">Gradient</span>
+<p class="text-[10px] geist-medium text-zinc-400 mt-1 uppercase tracking-widest" style="">© 2024 Kinetic Systems</p>
+</div>
+<div class="flex flex-wrap justify-center gap-10">
+<a class="geist-medium text-[11px] tracking-widest uppercase text-zinc-400 hover:text-black transition-colors" href="#" style="">Privacy Policy</a>
+<a class="geist-medium text-[11px] tracking-widest uppercase text-zinc-400 hover:text-black transition-colors" href="#" style="">Terms of Service</a>
+<a class="geist-medium text-[11px] tracking-widest uppercase text-zinc-400 hover:text-black transition-colors" href="#" style="">Security</a>
+<a class="geist-medium text-[11px] tracking-widest uppercase text-zinc-400 hover:text-black transition-colors" href="#" style="">Status</a>
+</div>
+</div>
+</footer>
+</body></html>

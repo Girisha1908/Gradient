@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kinetic Mono | Admin Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&amp;family=Newsreader:ital,wght@1,400;1,500;1,600&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-fixed-variant": "#3b3b3b",
+                        "surface-container-low": "#fafafa",
+                        "on-primary-fixed": "#ffffff",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#c8c6c5",
+                        "primary-fixed-dim": "#474746",
+                        "tertiary-container": "#747474",
+                        "background": "#fafafa",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#1d1d1d",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#e4e4e7",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#ffffff",
+                        "tertiary-fixed": "#5e5e5e",
+                        "surface-container-highest": "#d4d4d8",
+                        "primary-container": "#27272a",
+                        "on-primary-fixed-variant": "#e5e2e1",
+                        "surface-container": "#f4f4f5",
+                        "outline-variant": "#e4e4e7",
+                        "on-tertiary-container": "#ffffff",
+                        "outline": "#f4f4f5",
+                        "tertiary-fixed-dim": "#474747",
+                        "surface": "#ffffff",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "on-tertiary-fixed-variant": "#e2e2e2",
+                        "secondary": "#71717a",
+                        "primary": "#1d1d1d",
+                        "secondary-container": "#f4f4f5",
+                        "error": "#ef4444",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#410002",
+                        "on-background": "#1d1d1d",
+                        "surface-tint": "#5f5e5e",
+                        "inverse-on-surface": "#f0f1f1",
+                        "primary-fixed": "#5f5e5e",
+                        "secondary-fixed": "#c6c6c6",
+                        "on-primary-container": "#ffffff",
+                        "surface-dim": "#f4f4f5",
+                        "surface-variant": "#e2e2e2",
+                        "surface-bright": "#ffffff",
+                        "on-surface-variant": "#71717a",
+                        "secondary-fixed-dim": "#ababab",
+                        "on-surface": "#1d1d1d",
+                        "on-error": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "serif": ["Newsreader"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .serif-italic { font-family: 'Newsreader', serif; font-style: italic; }
+        .gloss-button {
+            background: linear-gradient(180deg, #1d1d1d 0%, #000000 100%);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1), inset 0px 1px 1px rgba(255,255,255,0.2);
+        }
+        .editorial-shadow { box-shadow: 0px 20px 50px rgba(0,0,0,0.03); }
+        .bg-video-overlay {
+            background: linear-gradient(to bottom, rgba(250,250,250,0.8), rgba(250,250,250,1));
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-white">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md text-zinc-900 dark:text-zinc-50 font-['Plus_Jakarta_Sans'] text-[13px] font-bold tracking-tight docked full-width top-0 sticky z-50 border-b border-zinc-100 dark:border-zinc-800 shadow-[0px_20px_50px_rgba(0,0,0,0.03)] flex justify-between items-center w-full px-8 py-4">
+<div class="flex items-center gap-8">
+<span class="text-xl font-medium tracking-tighter text-zinc-900 dark:text-zinc-50">Kinetic Mono</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-zinc-900 dark:text-zinc-50 border-b-2 border-zinc-900 dark:border-zinc-50 pb-1 transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors duration-200" href="#">Tasks</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors duration-200" href="#">Team</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-zinc-400 hover:text-zinc-900 transition-colors" data-icon="notifications">notifications</button>
+<button class="gloss-button text-white px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] active:scale-95 transition-transform">Create Task</button>
+</div>
+</header>
+<div class="flex min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden lg:flex flex-col h-full p-6 gap-y-2 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 font-['Plus_Jakarta_Sans'] text-[11px] font-bold uppercase tracking-[0.25em] h-screen w-64 fixed left-0 top-0 border-r border-zinc-100 dark:border-zinc-800 no-shadows z-40 pt-24">
+<div class="mb-8 px-4">
+<p class="text-[10px] text-zinc-400 tracking-widest">MANAGEMENT</p>
+<h2 class="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tighter normal-case">Admin</h2>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-zinc-900 dark:text-zinc-50 bg-white dark:bg-zinc-800 rounded-full shadow-sm active:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+                Tasks
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Team
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all mt-auto" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 lg:ml-64 p-8 md:p-12 bg-surface-container-low relative overflow-hidden">
+<!-- Background Decoration (Vertically Flipped Gradient Effect) -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-40">
+<div class="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-zinc-200 to-transparent rounded-full blur-[120px] -mr-40 -mt-40"></div>
+<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-zinc-100 to-transparent rounded-full blur-[100px] -ml-20 -mb-20"></div>
+</div>
+<div class="relative z-10 max-w-7xl mx-auto space-y-12">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-2">
+<span class="text-[10px] font-bold uppercase tracking-[0.3em] text-secondary">SYSTEM OVERVIEW</span>
+<h1 class="text-4xl md:text-5xl font-headline font-bold tracking-tighter text-on-background">
+                            Operational <span class="serif-italic font-normal">Pulse</span>
+</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-3">
+<img class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="Female team member portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgZeV7DJJr061w2YVYsE8_2qc3yxVD0e2So5mX1e3cbQGsdsvzeP0cgFFC_hCQnbag1wPXC6GeWnFIuHbysi3XQ8BRufr6Tosl5g-N14-y-6LwqHR9fZTR7MJP_-n1ritFqXylzd2CrMMiAubjsgXtpL-JDREHrwdLDWAjWHKz2JYORBlsSBMoRlrePNuzGnsYlACTPL2ueFD-05YSvz0dMTKN-ciPHylGDwNHL2oaSlD6YFf3X-tZJ_G7BAP5spp9jPvAiwQ0Yv4R"/>
+<img class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="Male team member portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ8eXupNVyeFUhzEfPyYNeRA3m5mDjkNpT5gtcC3YJwsbeG6Opaog6pRJLgsg9apcvc5RCyPP6VzYafn_wiZ3ZGbeDYWJ1ezVsYsADWQjgPyAoxTbsM-eWU3pAryKQVcPlE_yCoG646DBCaz-70S-xqS_dxabMeGX7fIS94ndunbuu7PVDWGcTFFjrjW--62zC12SWy2H1hWArRPOxZzr0eul-dtWC4uQ1qhn3D8L3EyBXw_Ah3f4uFDTXSSURoNYEWhrPcQLANDB2"/>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-zinc-100 flex items-center justify-center text-[10px] font-bold">+8</div>
+</div>
+<span class="text-[11px] font-bold text-secondary uppercase tracking-widest">Live Now</span>
+</div>
+</section>
+<!-- Operational Pulse Stats (Bento Grid) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-surface p-8 rounded-lg editorial-shadow border border-outline-variant flex flex-col justify-between h-48">
+<span class="text-[10px] font-bold text-secondary tracking-widest uppercase">Total Active Users</span>
+<div class="space-y-1">
+<p class="text-4xl font-headline font-bold">12,842</p>
+<p class="text-[11px] text-green-600 font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="trending_up">trending_up</span> +14%
+                            </p>
+</div>
+</div>
+<div class="bg-surface p-8 rounded-lg editorial-shadow border border-outline-variant flex flex-col justify-between h-48">
+<span class="text-[10px] font-bold text-secondary tracking-widest uppercase">Tasks Completed</span>
+<div class="space-y-1">
+<p class="text-4xl font-headline font-bold">942</p>
+<p class="text-[11px] text-zinc-400 font-bold">TODAY</p>
+</div>
+</div>
+<div class="bg-surface p-8 rounded-lg editorial-shadow border border-outline-variant flex flex-col justify-between h-48">
+<span class="text-[10px] font-bold text-secondary tracking-widest uppercase">System Latency</span>
+<div class="space-y-1">
+<p class="text-4xl font-headline font-bold">24<span class="text-xl ml-1">ms</span></p>
+<p class="text-[11px] text-green-600 font-bold italic serif-italic">Optimal State</p>
+</div>
+</div>
+<div class="bg-primary p-8 rounded-lg shadow-xl flex flex-col justify-between h-48 text-white">
+<span class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Resource Load</span>
+<div class="space-y-1">
+<p class="text-4xl font-headline font-bold">68%</p>
+<div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[68%]"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Team Performance Matrix & Critical Tasks (Left/Center) -->
+<div class="xl:col-span-2 space-y-8">
+<!-- Team Performance Matrix -->
+<section class="bg-surface rounded-lg editorial-shadow border border-outline-variant p-8">
+<div class="flex justify-between items-center mb-10">
+<h3 class="text-xl font-headline font-bold tracking-tight">Team Performance <span class="serif-italic font-normal">Matrix</span></h3>
+<button class="text-[10px] font-bold uppercase tracking-widest text-secondary hover:text-primary transition-colors">VIEW REPORT</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+<!-- Design Ops -->
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center border border-outline">
+<span class="material-symbols-outlined text-primary" data-icon="palette">palette</span>
+</div>
+<div>
+<p class="text-sm font-bold">Design Ops</p>
+<p class="text-[10px] text-secondary tracking-widest uppercase">8 MEMBERS</p>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+<span>Velocity</span>
+<span>92%</span>
+</div>
+<div class="h-0.5 bg-zinc-100 w-full">
+<div class="h-full bg-primary w-[92%]"></div>
+</div>
+</div>
+</div>
+<!-- Engineering Hub -->
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center border border-outline">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+</div>
+<div>
+<p class="text-sm font-bold">Engineering Hub</p>
+<p class="text-[10px] text-secondary tracking-widest uppercase">14 MEMBERS</p>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+<span>Uptime</span>
+<span>99.9%</span>
+</div>
+<div class="h-0.5 bg-zinc-100 w-full">
+<div class="h-full bg-primary w-[99.9%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Critical Tasks Monitor -->
+<section class="bg-surface rounded-lg editorial-shadow border border-outline-variant overflow-hidden">
+<div class="p-8 border-b border-outline">
+<h3 class="text-xl font-headline font-bold tracking-tight">Critical Tasks <span class="serif-italic font-normal">Monitor</span></h3>
+</div>
+<div class="divide-y divide-outline">
+<div class="p-6 flex items-center justify-between hover:bg-zinc-50/50 transition-colors">
+<div class="flex items-center gap-4">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<div>
+<p class="text-sm font-bold">Security Audit Protocol X1</p>
+<p class="text-[10px] text-secondary tracking-widest uppercase">HIGH PRIORITY • ASSIGNED TO: Sarah K.</p>
+</div>
+</div>
+<button class="px-4 py-2 border border-outline rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-white transition-all">Review</button>
+</div>
+<div class="p-6 flex items-center justify-between hover:bg-zinc-50/50 transition-colors">
+<div class="flex items-center gap-4">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<div>
+<p class="text-sm font-bold">API Endpoints Optimization</p>
+<p class="text-[10px] text-secondary tracking-widest uppercase">MEDIUM PRIORITY • ASSIGNED TO: David L.</p>
+</div>
+</div>
+<button class="px-4 py-2 border border-outline rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-white transition-all">Review</button>
+</div>
+<div class="p-6 flex items-center justify-between hover:bg-zinc-50/50 transition-colors">
+<div class="flex items-center gap-4">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+<div>
+<p class="text-sm font-bold">Infrastructure Scalability Plan</p>
+<p class="text-[10px] text-secondary tracking-widest uppercase">LOW PRIORITY • ASSIGNED TO: Infrastructure Team</p>
+</div>
+</div>
+<button class="px-4 py-2 border border-outline rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-white transition-all">Review</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Side Panels (Right Column) -->
+<div class="space-y-8">
+<!-- Due Today Checklist -->
+<section class="bg-white rounded-lg p-8 editorial-shadow border border-outline-variant">
+<div class="mb-6">
+<h3 class="text-lg font-headline font-bold tracking-tight mb-1">Due <span class="serif-italic font-normal">Today</span></h3>
+<p class="text-[10px] text-secondary font-bold uppercase tracking-widest">4 TASKS REMAINING</p>
+</div>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="mt-1 w-4 h-4 rounded border border-zinc-300 flex items-center justify-center shrink-0"></div>
+<p class="text-sm text-on-background">Finalize Q4 roadmap presentation</p>
+</li>
+<li class="flex items-start gap-3">
+<div class="mt-1 w-4 h-4 rounded border border-zinc-300 flex items-center justify-center shrink-0"></div>
+<p class="text-sm text-on-background">Review Engineering PRs #421-428</p>
+</li>
+<li class="flex items-start gap-3 opacity-40">
+<div class="mt-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[10px] text-white" data-icon="check">check</span>
+</div>
+<p class="text-sm text-on-background line-through">Morning sync with Design Ops</p>
+</li>
+<li class="flex items-start gap-3">
+<div class="mt-1 w-4 h-4 rounded border border-zinc-300 flex items-center justify-center shrink-0"></div>
+<p class="text-sm text-on-background">Client feedback synthesis</p>
+</li>
+</ul>
+</section>
+<!-- Activity Feed -->
+<section class="bg-white rounded-lg p-8 editorial-shadow border border-outline-variant">
+<div class="mb-8">
+<h3 class="text-lg font-headline font-bold tracking-tight">Activity <span class="serif-italic font-normal">Feed</span></h3>
+</div>
+<div class="relative space-y-8 before:absolute before:inset-0 before:ml-1.5 before:w-px before:-translate-x-1/2 before:bg-zinc-100">
+<div class="relative flex items-start gap-4">
+<div class="mt-1.5 w-3 h-3 rounded-full bg-primary border-4 border-white z-10"></div>
+<div>
+<p class="text-sm font-medium">System Update <span class="text-secondary font-normal">deployed to staging</span></p>
+<p class="text-[10px] text-secondary uppercase tracking-widest mt-1">12 MIN AGO</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4">
+<div class="mt-1.5 w-3 h-3 rounded-full bg-zinc-300 border-4 border-white z-10"></div>
+<div>
+<p class="text-sm font-medium">New Team Member <span class="text-secondary font-normal">joined Engineering Hub</span></p>
+<p class="text-[10px] text-secondary uppercase tracking-widest mt-1">2 HOURS AGO</p>
+</div>
+</div>
+<div class="relative flex items-start gap-4">
+<div class="mt-1.5 w-3 h-3 rounded-full bg-zinc-300 border-4 border-white z-10"></div>
+<div>
+<p class="text-sm font-medium">Resource Load <span class="text-secondary font-normal">spiked at 84%</span></p>
+<p class="text-[10px] text-secondary uppercase tracking-widest mt-1">5 HOURS AGO</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest w-full py-8 mt-auto border-t border-zinc-100 dark:border-zinc-800 no-shadows flex justify-between items-center px-8 relative z-50">
+<div class="flex gap-6">
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 underline opacity-80 hover:opacity-100 transition-all" href="#">Privacy</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 underline opacity-80 hover:opacity-100 transition-all" href="#">Terms</a>
+<a class="text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 underline opacity-80 hover:opacity-100 transition-all" href="#">Support</a>
+</div>
+<p class="text-zinc-400">© 2024 Kinetic Mono Editorial</p>
+</footer>
+</body></html>

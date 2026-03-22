@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gradient | User Task Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Instrument+Serif:ital@0;1&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1d1d1d",
+                        "on-surface": "#1d1d1d",
+                        "on-surface-variant": "#71717a",
+                        "surface": "#ffffff",
+                        "outline": "#f4f4f5",
+                        "outline-variant": "#e4e4e7",
+                        "background": "#fafafa",
+                        "secondary": "#71717a",
+                        "error": "#ef4444",
+                    },
+                    fontFamily: {
+                        "sans": ["Geist", "sans-serif"],
+                        "serif": ["Instrument Serif", "serif"],
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    boxShadow: {
+                        'editorial': '0px 20px 50px rgba(0,0,0,0.03)',
+                        'card': '0px 4px 20px rgba(0,0,0,0.02)',
+                        'glossy': 'shadow-[inset_-4px_-6px_25px_0px_rgba(201,201,201,0.08),inset_4px_4px_10px_0px_rgba(29,29,29,0.24)]'
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Geist', sans-serif; }
+        .editorial-heading-serif { font-family: 'Instrument Serif', serif; font-style: italic; }
+        .glossy-button-style {
+            background: #1d1d1d;
+            box-shadow: inset -4px -6px 25px 0px rgba(201,201,201,0.08), inset 4px 4px 10px 0px rgba(29,29,29,0.24);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary/10 selection:text-primary">
+<!-- Video Background Shell -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+<video autoplay="" class="absolute w-full h-full object-cover scale-y-[-1]" loop="" muted="" playsinline="">
+<source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4" type="video/mp4"/>
+</video>
+<div class="absolute inset-0 bg-gradient-to-b from-[26.416%] from-[rgba(255,255,255,0)] to-[66.943%] to-white"></div>
+</div>
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-white/40 backdrop-blur-xl border-r border-outline flex flex-col py-10 px-8 z-50">
+<div class="mb-16">
+<h1 class="text-xl font-medium tracking-[0.15em] uppercase text-primary">Gradient</h1>
+<p class="text-[10px] text-on-surface-variant font-bold mt-1.5 uppercase tracking-[0.2em] opacity-50">Productivity Suite</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Active State: Dashboard -->
+<a class="flex items-center gap-4 py-3.5 px-5 bg-white text-primary rounded-2xl border border-outline shadow-card transition-all" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary">grid_view</span>
+<span class="text-[13px] font-semibold tracking-tight">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 py-3.5 px-5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-105 transition-transform">assignment_turned_in</span>
+<span class="text-[13px] font-medium tracking-tight">My Tasks</span>
+</a>
+<a class="flex items-center gap-4 py-3.5 px-5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-105 transition-transform">group</span>
+<span class="text-[13px] font-medium tracking-tight">Team</span>
+</a>
+<a class="flex items-center gap-4 py-3.5 px-5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-105 transition-transform">insights</span>
+<span class="text-[13px] font-medium tracking-tight">Analytics</span>
+</a>
+<a class="flex items-center gap-4 py-3.5 px-5 text-on-surface-variant hover:text-primary transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-105 transition-transform">settings</span>
+<span class="text-[13px] font-medium tracking-tight">Settings</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4">
+<button class="w-full glossy-button-style text-white py-4 px-4 rounded-2xl font-bold text-[11px] tracking-[0.15em] uppercase active:scale-95 transition-transform shadow-lg shadow-black/5">
+            Upgrade Plan
+        </button>
+<a class="flex items-center gap-4 py-2 px-5 text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span class="text-[11px] font-bold tracking-tight">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-72 min-h-screen relative z-10">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-72 h-24 bg-white/40 backdrop-blur-xl border-b border-outline flex justify-between items-center px-12 z-40">
+<div class="flex items-center gap-4">
+<h2 class="text-2xl font-medium tracking-tight">Manager <span class="editorial-heading-serif">Dashboard</span></h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors text-[24px]">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-black rounded-full ring-2 ring-white"></span>
+</div>
+<div class="flex items-center gap-4 pl-6 border-l border-outline">
+<div class="text-right hidden sm:block">
+<p class="text-[13px] font-bold tracking-tight">Alex Rivera</p>
+<p class="text-[10px] text-on-surface-variant font-bold opacity-50 uppercase tracking-widest">Employee</p>
+</div>
+<img alt="Alex Rivera" class="w-10 h-10 rounded-full border border-outline object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCROfD2ns6ibcgUhJa5xCVAvY5ep-HXrt6ETZCFbSr9SGy6vljw3t9HFGPQB_FaMpFqV_TVQZY0qJX2FmfS4ox9N42UDEIAoro8on8KOGDeLgAIN25Dj-6MVEfI0fDFhchg_I3RaSU1cB6hKEos5LA_kMZeeFPx0FoFH1jsAcmRFPstRrHKVr9vsTn2Cmk1Cy3mP6TCp8OU_lniSCRHI4_8EqX93btuxl1nwgAS8G3ISMDfC12CpS07DV-BTU8uUcw_mK3SBn2VeLe2"/>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="pt-36 px-12 pb-24 max-w-7xl mx-auto space-y-12">
+<!-- Section 1: My Assigned Tasks Summary -->
+<section>
+<div class="flex items-baseline justify-between mb-8">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.25em] opacity-40">My Assigned Tasks</h3>
+<span class="text-[11px] font-bold tracking-[0.2em] uppercase text-primary border-b border-primary hover:opacity-70 cursor-pointer">View All Tasks</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+<!-- Total Tasks -->
+<div class="bg-white p-10 rounded-[2.5rem] border border-outline shadow-editorial transition-all hover:scale-[1.02]">
+<div class="flex justify-between items-start mb-8">
+<span class="text-[11px] font-bold uppercase tracking-[0.25em] text-on-surface-variant opacity-40">Total Active</span>
+<span class="material-symbols-outlined text-on-surface-variant/40">assignment</span>
+</div>
+<div class="flex items-baseline gap-4">
+<span class="text-6xl font-medium tracking-tighter">24</span>
+<span class="text-[13px] font-medium editorial-heading-serif italic text-on-surface-variant">+2 this week</span>
+</div>
+</div>
+<!-- Due Today -->
+<div class="bg-white p-10 rounded-[2.5rem] border border-outline shadow-editorial transition-all hover:scale-[1.02]">
+<div class="flex justify-between items-start mb-8">
+<span class="text-[11px] font-bold uppercase tracking-[0.25em] text-on-surface-variant opacity-40">Due Today</span>
+<span class="material-symbols-outlined text-on-surface-variant/40">priority_high</span>
+</div>
+<div class="flex items-baseline gap-4">
+<span class="text-6xl font-medium tracking-tighter">05</span>
+<span class="text-[13px] font-medium editorial-heading-serif italic text-on-surface-variant">Active focus</span>
+</div>
+</div>
+<!-- Overdue -->
+<div class="bg-white p-10 rounded-[2.5rem] border border-outline shadow-editorial transition-all hover:scale-[1.02]">
+<div class="flex justify-between items-start mb-8">
+<span class="text-[11px] font-bold uppercase tracking-[0.25em] text-on-surface-variant opacity-40">Overdue</span>
+<span class="material-symbols-outlined text-error/40">warning</span>
+</div>
+<div class="flex items-baseline gap-4">
+<span class="text-6xl font-medium tracking-tighter text-error">02</span>
+<span class="text-[13px] font-medium editorial-heading-serif italic text-error">Action required</span>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+<!-- Left Column: High Priority & Feedback -->
+<div class="lg:col-span-2 space-y-12">
+<!-- Section 2: High Priority Focus -->
+<section class="bg-white p-12 rounded-[3rem] border border-outline shadow-editorial">
+<div class="flex items-center gap-5 mb-12">
+<div class="w-11 h-11 rounded-full bg-black flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<h3 class="text-2xl font-medium tracking-tight">High Priority <span class="editorial-heading-serif">Focus</span></h3>
+</div>
+<div class="space-y-6">
+<!-- Task Card -->
+<div class="group p-6 rounded-2xl border border-outline hover:border-primary transition-all flex items-center justify-between">
+<div class="flex items-start gap-5">
+<div class="mt-1 w-5 h-5 rounded border border-zinc-300 flex items-center justify-center group-hover:border-primary transition-colors cursor-pointer shrink-0"></div>
+<div>
+<h4 class="text-primary font-semibold text-[15px] mb-1">Finalize Q3 Performance Architecture</h4>
+<p class="text-on-surface-variant text-[12px] flex items-center gap-2 opacity-60 font-medium">
+<span class="material-symbols-outlined text-[16px]">folder</span>
+                                        Product Engineering
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="px-4 py-1.5 bg-zinc-100 text-[10px] font-bold text-primary rounded-full uppercase tracking-widest">High</div>
+<div class="text-right">
+<p class="text-[11px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">Due 4:00 PM</p>
+</div>
+</div>
+</div>
+<!-- Task Card -->
+<div class="group p-6 rounded-2xl border border-outline hover:border-primary transition-all flex items-center justify-between">
+<div class="flex items-start gap-5">
+<div class="mt-1 w-5 h-5 rounded border border-zinc-300 flex items-center justify-center group-hover:border-primary transition-colors cursor-pointer shrink-0"></div>
+<div>
+<h4 class="text-primary font-semibold text-[15px] mb-1">Review Mobile API Auth Flow</h4>
+<p class="text-on-surface-variant text-[12px] flex items-center gap-2 opacity-60 font-medium">
+<span class="material-symbols-outlined text-[16px]">folder</span>
+                                        Security Core
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="px-4 py-1.5 bg-zinc-100 text-[10px] font-bold text-primary rounded-full uppercase tracking-widest">Medium</div>
+<div class="text-right">
+<p class="text-[11px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">Due Today</p>
+</div>
+</div>
+</div>
+<!-- Task Card -->
+<div class="group p-6 rounded-2xl border border-outline hover:border-primary transition-all flex items-center justify-between">
+<div class="flex items-start gap-5">
+<div class="mt-1 w-5 h-5 rounded border border-zinc-300 flex items-center justify-center group-hover:border-primary transition-colors cursor-pointer shrink-0"></div>
+<div>
+<h4 class="text-primary font-semibold text-[15px] mb-1">Internal Design Sync: Monolith UI</h4>
+<p class="text-on-surface-variant text-[12px] flex items-center gap-2 opacity-60 font-medium">
+<span class="material-symbols-outlined text-[16px]">folder</span>
+                                        UX Research
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="px-4 py-1.5 bg-zinc-100 text-[10px] font-bold text-primary rounded-full uppercase tracking-widest">Low</div>
+<div class="text-right">
+<p class="text-[11px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">Tomorrow</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Recent Feedback -->
+<section class="bg-white p-12 rounded-[3rem] border border-outline shadow-editorial relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-zinc-100/50 blur-[100px] rounded-full -mr-20 -mt-20"></div>
+<div class="flex gap-8 items-start relative z-10">
+<img alt="Sarah Jenkins" class="w-16 h-16 rounded-full border-2 border-white shadow-card object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH57cHCW87hbZYNY6nVwkJcN6SlGpWd16W5xR21sFxSKxCFI8cKGnwYeJu_u4JKIEQdRaKf8afoIYZLH-GQkHGEaI88AqD9v6avTOvjgwU7RB73Z_JSYAhyQoyAY4PH6smUPsUHTZXrhi8oVJt0la2PC3Ue1iHgInMlyPrEJnX2PDcLX_qIvgQdhDCSomNA9vQrX2kvkp1R5_rCGsvf6STR3omIgs1MMf3HopCyCBUhjJ5TDzBK-JgP_A3vThtgONpM-B9N5MeHcvm"/>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-4">
+<span class="font-bold text-primary text-[15px]">Sarah Jenkins</span>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest opacity-40">• Senior Architect</span>
+</div>
+<p class="text-primary leading-relaxed text-2xl font-medium tracking-tight editorial-heading-serif">
+                                "The precision on the last commit for the task scheduler was exceptional. The logic flow is much more intuitive now. Let's apply this pattern to the rest of the module."
+                            </p>
+<div class="mt-8 flex items-center justify-between border-t border-outline pt-6">
+<span class="text-[10px] uppercase font-bold tracking-[0.2em] text-primary">Ref: SCH-402</span>
+<button class="text-[10px] font-bold tracking-[0.2em] uppercase text-primary border-b border-primary hover:opacity-70 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">reply</span> Reply
+                                </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Insights & Timeline -->
+<div class="space-y-12">
+<!-- Section 4: Productivity Insights -->
+<section class="bg-white p-10 rounded-[2.5rem] border border-outline shadow-editorial">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.25em] mb-10 opacity-40">Productivity Insights</h3>
+<div class="space-y-12">
+<!-- Velocity Meter -->
+<div>
+<div class="flex justify-between items-end mb-6">
+<p class="text-[11px] font-bold text-primary uppercase tracking-[0.2em]">Work Velocity</p>
+<span class="text-3xl font-medium tracking-tighter">84%</span>
+</div>
+<div class="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[84%] rounded-full"></div>
+</div>
+<p class="text-[11px] font-medium editorial-heading-serif italic text-on-surface-variant mt-4">+12% from previous sprint</p>
+</div>
+<!-- Completion Rate Chart -->
+<div class="pt-8 border-t border-outline">
+<p class="text-[11px] font-bold text-primary uppercase tracking-[0.2em] mb-8">Task Completion (7 Days)</p>
+<div class="flex items-end justify-between h-32 gap-3 px-1">
+<div class="flex-1 bg-zinc-100 rounded-lg h-[40%] transition-colors hover:bg-zinc-200"></div>
+<div class="flex-1 bg-zinc-100 rounded-lg h-[65%] transition-colors hover:bg-zinc-200"></div>
+<div class="flex-1 bg-zinc-100 rounded-lg h-[85%] transition-colors hover:bg-zinc-200"></div>
+<div class="flex-1 bg-zinc-300 rounded-lg h-[55%] transition-colors hover:bg-zinc-400"></div>
+<div class="flex-1 bg-zinc-400 rounded-lg h-[90%] transition-colors hover:bg-zinc-500"></div>
+<div class="flex-1 bg-black rounded-lg h-[100%]"></div>
+<div class="flex-1 bg-zinc-100 rounded-lg h-[30%] transition-colors hover:bg-zinc-200"></div>
+</div>
+<div class="flex justify-between mt-6 px-1 text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] opacity-40">
+<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="text-primary opacity-100">S</span><span>S</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Activity Timeline -->
+<section class="bg-white p-10 rounded-[2.5rem] border border-outline shadow-editorial">
+<h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-[0.25em] mb-10 opacity-40">Activity Timeline</h3>
+<div class="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1px] before:bg-outline">
+<!-- Timeline Item -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-white border border-outline flex items-center justify-center z-10 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+<p class="text-[14px] font-semibold text-primary">Task Completed</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Updated <span class="editorial-heading-serif italic text-primary font-medium">PRJ-90 Architecture Sync</span></p>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-30 mt-2 block">2 hours ago</span>
+</div>
+<!-- Timeline Item -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-white border border-outline flex items-center justify-center z-10 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-primary">chat_bubble</span>
+</div>
+<p class="text-[14px] font-semibold text-primary">New Comment</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Replied on <span class="editorial-heading-serif italic text-primary font-medium">API Auth Flow</span></p>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-30 mt-2 block">5 hours ago</span>
+</div>
+<!-- Timeline Item -->
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-white border border-outline flex items-center justify-center z-10 shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-primary">upload_file</span>
+</div>
+<p class="text-[14px] font-semibold text-primary">Asset Attached</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Uploaded <span class="editorial-heading-serif italic text-primary font-medium">v1.2_draft_specs.pdf</span></p>
+<span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant opacity-30 mt-2 block">Yesterday</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+<footer class="ml-72 bg-white border-t border-outline py-20 relative z-10">
+<div class="max-w-7xl mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-12">
+<div class="flex flex-col items-center md:items-start">
+<span class="text-xl font-medium tracking-tight">Gradient <span class="editorial-heading-serif">Kinetic</span></span>
+<p class="text-[10px] font-bold text-on-surface-variant opacity-40 uppercase tracking-[0.25em] mt-3">© 2024 Kinetic. Editorial Suite.</p>
+</div>
+<div class="flex gap-12 text-[10px] font-bold tracking-[0.25em] uppercase text-on-surface-variant/50">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>
