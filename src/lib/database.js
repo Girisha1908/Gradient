@@ -116,14 +116,11 @@ export const uploadAttachment = async (file, path) => {
 };
 
 // ─── USER ───────────────────────────────
-export const fetchCurrentUser = async () => {
+// getCurrentUser: ONLY reads from localStorage — never overrides identity from DB
+export const fetchCurrentUser = () => {
   const savedUser = localStorage.getItem('user');
   if (!savedUser) return null;
-  const user = JSON.parse(savedUser);
-  // Re-fetch the real ID from DB based on email to ensure parity
-  const { data, error } = await supabase.from('profiles').select('id').eq('email', user.email).single();
-  if (!error && data) return { ...user, id: data.id };
-  return user;
+  return JSON.parse(savedUser);
 };
 
 export const getProfileByEmail = async (email) => {
@@ -218,6 +215,46 @@ export const sendTaskMessage = async (taskId, senderId, message) => {
     sender_id: senderId,
     message: message
   });
+  if (error) throw error;
+  return data;
+};
+
+// ─── TEAMS SYSTEM ─────────────────────────
+export const createTeam = async (name, createdBy) => {
+  const { data, error } = await supabase.from('teams').insert({
+    name,
+    created_by: createdBy
+  }).select().single();
+  if (error) throw error;
+  return data;
+};
+
+export const addTeamMembers = async (teamId, userIds) => {
+  const inserts = userIds.map(uid => ({ team_id: teamId, user_id: uid }));
+  const { data, error } = await supabase.from('team_members').insert(inserts);
+  if (error) throw error;
+  return data;
+};
+
+export const fetchTeamMembers = async (teamId) => {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select(`user_id, profiles(email)`)
+    .eq('team_id', teamId);
+  if (error) throw error;
+  return data;
+};
+
+export const fetchTeams = async () => {
+  const { data, error } = await supabase
+    .from('teams')
+    .select(`
+      *,
+      team_members (
+        *,
+        profiles (email)
+      )
+    `);
   if (error) throw error;
   return data;
 };

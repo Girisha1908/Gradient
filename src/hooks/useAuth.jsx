@@ -18,9 +18,12 @@ export const AuthProvider = ({ children }) => {
   const signInWithEmail = async (email, password) => {
     const devUser = devUsers[email];
     if (devUser) {
+      // STEP 5: Reset session before setting new user — prevent cross-user contamination
+      localStorage.removeItem('user');
       const userData = { ...devUser, email };
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
+      console.log("ACTIVE SESSION:", userData);
       return { user: userData };
     } else {
       throw new Error('User not found in Dev Auth system');
@@ -33,11 +36,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signInWithGoogle = async () => {
+    // STEP 5: Reset session before setting new user
+    localStorage.removeItem('user');
     // Default to manager for google dev login
     const devUser = devUsers['anamalagirisha@gmail.com'];
-    localStorage.setItem('user', JSON.stringify(devUser));
-    setUser(devUser);
-    return { user: devUser };
+    const userData = { ...devUser, email: 'anamalagirisha@gmail.com' };
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    console.log("ACTIVE SESSION:", userData);
+    return { user: userData };
   };
 
   const signOut = async () => {

@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { fetchTaskMetrics, fetchEmployees, createTaskWithAssignees, insertActivityLog, fetchActivityLogs, reviewDeliverable, getProfileByEmail, deleteTask, fetchTaskMessages, sendTaskMessage } from '../lib/database';
+import { fetchTaskMetrics, fetchEmployees, createTaskWithAssignees, insertActivityLog, fetchActivityLogs, reviewDeliverable, getProfileByEmail, deleteTask, fetchTaskMessages, sendTaskMessage, createTeam, addTeamMembers, fetchTeams } from '../lib/database';
 import { supabase } from '../lib/supabase';
+import { getCurrentUser } from '../lib/auth';
 
 const VIDEO_SRC = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4";
-
-function getCurrentUser() {
-  const saved = localStorage.getItem("user");
-  return saved ? JSON.parse(saved) : null;
-}
 
 const ManagerDashboard = () => {
   const { signOut } = useAuth();
@@ -23,19 +19,32 @@ const ManagerDashboard = () => {
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [realUserId, setRealUserId] = useState(null);
   
+  // Teams State
+  const [teams, setTeams] = useState([]);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState([]);
+  const [selectedTeamForTask, setSelectedTeamForTask] = useState('');
+  
   // Chat Modal State
   const [chatTask, setChatTask] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [message, setMessage] = useState('');
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     const user = getCurrentUser();
+    console.log("ACTIVE SESSION:", user);
     if (!user) {
-      navigate('/');
+      navigate('/auth');
+      return;
+    }
+    // STEP 4: Role guard — only admins/managers can access this page
+    if (user.role !== 'admin') {
+      console.warn("SESSION CONFLICT: non-admin user on manager page, redirecting");
+      navigate('/auth');
       return;
     }
     setCurrentUser(user);
-    console.log("LOCAL USER:", getCurrentUser());
   }, [navigate]);
 
   useEffect(() => {
@@ -85,6 +94,7 @@ const ManagerDashboard = () => {
       setDeliverables(filteredDeliverables);
       setEmployees(await fetchEmployees());
       setActivities(await fetchActivityLogs());
+      setTeams(await fetchTeams() || []);
     } catch (e) {
       console.error(e);
     }
@@ -93,29 +103,64 @@ const ManagerDashboard = () => {
   const handleCreateTask = async (e) => {
     e.preventDefault();
     if (!newTask.title) return alert("Task title is required.");
-    if (selectedAssignees.length === 0) return alert("Select at least one assignee.");
+    if (selectedAssignees.length === 0 && !selectedTeamForTask) return alert("Select at least one assignee or a team.");
     try {
       const user = getCurrentUser();
       const realManagerId = await getProfileByEmail(user.email);
-      console.log("Manager email:", user.email);
-      console.log("Real Manager ID:", realManagerId);
 
-      await createTaskWithAssignees(
-        {
-          title: newTask.title,
-          priority: newTask.priority,
-          created_by: realManagerId,
-          status: 'pending'
-        },
-        selectedAssignees
-      );
-      await insertActivityLog({
-        user_id: realManagerId,
-        action: 'assigned task to ' + selectedAssignees.length + ' employee(s)',
-        details: newTask.title
-      });
+      if (selectedTeamForTask) {
+        // PART 6 — ASSIGN TASK TO TEAM
+        const { data: task } = await supabase
+          .from("tasks")
+          .insert({
+            title: newTask.title,
+            priority: newTask.priority,
+            created_by: realManagerId,
+            status: 'pending', // required by app logic
+            team_id: selectedTeamForTask
+          })
+          .select()
+          .single();
+
+        const { data: members } = await supabase
+          .from("team_members")
+          .select("user_id")
+          .eq("team_id", selectedTeamForTask);
+
+        if (members && members.length > 0) {
+          const assignments = members.map(m => ({
+            task_id: task.id,
+            user_id: m.user_id
+          }));
+          await supabase.from("task_assignments").insert(assignments);
+        }
+
+        await insertActivityLog({
+          user_id: realManagerId,
+          action: 'assigned task to team',
+          details: newTask.title
+        });
+      } else {
+        // PART 7 — ASSIGN TO INDIVIDUAL (UNCHANGED)
+        await createTaskWithAssignees(
+          {
+            title: newTask.title,
+            priority: newTask.priority,
+            created_by: realManagerId,
+            status: 'pending'
+          },
+          selectedAssignees
+        );
+        await insertActivityLog({
+          user_id: realManagerId,
+          action: 'assigned task to ' + selectedAssignees.length + ' employee(s)',
+          details: newTask.title
+        });
+      }
+
       setNewTask({ title: '', priority: 'Medium' });
       setSelectedAssignees([]);
+      setSelectedTeamForTask('');
       loadData();
     } catch (error) {
       console.error("Task Creation Error:", error);
@@ -151,7 +196,12 @@ const ManagerDashboard = () => {
           status: "approved",
           feedback: feedback || null,
           reviewed_by: manager_id,
-          reviewed_at: new Date().toISOString()
+          reviewed_at: new Date().toISOString(),
+          // Verified Work Fields
+          verified: true,
+          verified_by: manager_id,
+          company_name: 'SGG Company',
+          verified_at: new Date().toISOString()
         })
         .eq("id", deliverable_id);
 
@@ -209,32 +259,47 @@ const ManagerDashboard = () => {
   const closeChat = () => {
     setChatTask(null);
     setChatMessages([]);
-    setNewMessage('');
+    setMessage('');
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !chatTask) return;
+  const handleSend = async () => {
     try {
-      await sendTaskMessage(chatTask.id, realUserId, newMessage);
-      setNewMessage('');
+      if (!message.trim()) return;
+
+      if (!chatTask?.id) {
+        console.error("No active task");
+        return;
+      }
+
+      // Ensure we have a valid sender ID — fall back to DB lookup if state not ready
+      let senderId = realUserId;
+      if (!senderId) {
+        const user = getCurrentUser();
+        senderId = await getProfileByEmail(user.email);
+      }
+      await sendTaskMessage(chatTask.id, senderId, message.trim());
+      setMessage('');
       const msgs = await fetchTaskMessages(chatTask.id);
       setChatMessages(msgs);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       await insertActivityLog({
-        user_id: realUserId,
+        user_id: senderId,
         action: 'sent message',
         details: `replied to ${chatTask.title}`
       });
-    } catch (error) { console.error('Error sending message:', error); }
+    } catch (err) {
+      console.error("Send failed:", err);
+    }
   };
 
   useEffect(() => {
     let channel;
     if (chatTask) {
-      channel = supabase.channel('task_messages')
+      channel = supabase.channel(`mgr_chat_${chatTask.id}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'task_messages', filter: `task_id=eq.${chatTask.id}` }, async () => {
           const msgs = await fetchTaskMessages(chatTask.id);
           setChatMessages(msgs);
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
         })
         .subscribe();
     }
@@ -260,20 +325,20 @@ const ManagerDashboard = () => {
           <span className="block text-xs text-[#6b7280] font-medium mt-1 uppercase tracking-widest opacity-60">Admin Console</span>
         </div>
         <nav className="flex-1 space-y-1">
-          <a className="flex items-center gap-3 py-3 px-4 bg-white/80 shadow-sm border border-black/5 text-[#373a46] rounded-xl transition-all" href="#">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 py-3 px-4 bg-white/80 shadow-sm border border-black/5 text-[#373a46] rounded-xl transition-all w-full text-left">
             <span className="material-symbols-outlined text-sm">dashboard</span>
             <span className="text-sm font-semibold tracking-tight">Dashboard</span>
-          </a>
+          </button>
           {[
             { icon: 'assignment', label: 'Tasks' },
-            { icon: 'group', label: 'Team' },
-            { icon: 'insert_chart', label: 'Analytics' },
+            { icon: 'group', label: 'Team', route: '/team' },
+            { icon: 'insert_chart', label: 'Portfolio' },
             { icon: 'settings', label: 'Settings' },
           ].map(item => (
-            <a key={item.label} className="flex items-center gap-3 py-3 px-4 text-[#6b7280] hover:text-[#373a46] transition-all group" href="#">
+            <button key={item.label} onClick={() => item.route && navigate(item.route)} className="w-full flex items-center gap-3 py-3 px-4 text-[#6b7280] hover:text-[#373a46] transition-all group">
               <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">{item.icon}</span>
               <span className="text-sm font-medium tracking-tight">{item.label}</span>
-            </a>
+            </button>
           ))}
         </nav>
         <div className="mt-auto pt-6 space-y-1">
@@ -354,12 +419,28 @@ const ManagerDashboard = () => {
                   </div>
                   <div className="space-y-8 flex flex-col justify-between">
                     <div>
-                      <label className="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7280] mb-4 opacity-50">Select Assignees (Active Team)</label>
-                      <div className="space-y-3 max-h-48 overflow-y-auto pr-2 no-scrollbar">
-                         {employees.map(emp => {
+                      {/* TEAM ASSIGNMENT DROPDOWN */}
+                      <div className="mb-6">
+                        <label className="block text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7280] mb-3 opacity-50">Assign to Team (Overrides Individuals)</label>
+                        <select 
+                          value={selectedTeamForTask} 
+                          onChange={(e) => { 
+                            setSelectedTeamForTask(e.target.value); 
+                            setSelectedAssignees([]); 
+                          }} 
+                          className="w-full bg-zinc-50 border border-black/5 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black/20 text-[#373a46] font-medium transition-all"
+                        >
+                          <option value="">No Team (Assign Individuals)</option>
+                          {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                      </div>
+
+                      <label className={`block text-[10px] uppercase tracking-[0.2em] font-bold text-[#6b7280] mb-4 transition-colors ${selectedTeamForTask ? 'opacity-20' : 'opacity-50'}`}>Select Individual Assignees</label>
+                      <div className={`space-y-3 max-h-48 overflow-y-auto pr-2 no-scrollbar transition-opacity ${selectedTeamForTask ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
+                         {employees.map((emp, idx) => {
                            const isSelected = selectedAssignees.includes(emp.id);
                            return (
-                            <div key={emp.id} onClick={() => {
+                            <div key={`${emp.id}-${idx}`} onClick={() => {
                               setSelectedAssignees(prev =>
                                 prev.includes(emp.id)
                                   ? prev.filter(id => id !== emp.id)
@@ -380,7 +461,7 @@ const ManagerDashboard = () => {
                          {employees.length === 0 && <span className="text-xs text-[#6b7280] italic">No employees found. Seed the database.</span>}
                       </div>
                     </div>
-                    <button onClick={handleCreateTask} className="w-full bg-[#1d1d1d] text-white py-4 rounded-2xl font-bold text-xs tracking-[0.2em] uppercase btn-editorial-shadow hover:opacity-90 transition-all">
+                    <button onClick={handleCreateTask} className="w-full bg-[#1d1d1d] text-white py-4 rounded-2xl font-bold text-xs tracking-[0.2em] uppercase btn-editorial-shadow hover:opacity-90 transition-all mt-4">
                       Finalize Assignment
                     </button>
                   </div>
@@ -394,8 +475,8 @@ const ManagerDashboard = () => {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#6b7280]">Total: {metrics.data?.length || 0}</span>
                 </div>
                 <div className="space-y-3">
-                  {metrics.data?.length === 0 ? <p className="text-xs text-[#6b7280]">No tasks assigned yet.</p> : metrics.data?.map(t => (
-                    <div key={t.id} className="p-5 rounded-2xl bg-white border border-black/[0.03] flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                  {metrics.data?.length === 0 ? <p className="text-xs text-[#6b7280]">No tasks assigned yet.</p> : metrics.data?.map((t, idx) => (
+                    <div key={`${t.id}-${idx}`} className="p-5 rounded-2xl bg-white border border-black/[0.03] flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-4">
                         <button onClick={() => openChat(t)} className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-[#1d1d1d] hover:bg-black hover:text-white transition-all shadow-sm">
                           <span className="material-symbols-outlined text-[14px]">chat</span>
@@ -422,8 +503,8 @@ const ManagerDashboard = () => {
                   <h2 className="text-2xl font-medium">Review <span className="font-serif italic font-normal">Deliverables</span></h2>
                 </div>
                 <div className="space-y-4">
-                  {deliverables.length === 0 ? <p className="text-xs text-[#6b7280]">No deliverables submitted yet.</p> : deliverables.map(del => (
-                     <div key={del.id} className="p-6 rounded-2xl border border-black/5 bg-white/60 flex items-center justify-between shadow-sm">
+                  {deliverables.length === 0 ? <p className="text-xs text-[#6b7280]">No deliverables submitted yet.</p> : deliverables.map((del, idx) => (
+                     <div key={`${del.id}-${idx}`} className="p-6 rounded-2xl border border-black/5 bg-white/60 flex items-center justify-between shadow-sm">
                        <div>
                          <p className="font-bold text-sm tracking-tight">{del.tasks?.title}</p>
                          <p className="text-[10px] text-[#6b7280] font-medium opacity-60 mt-1">From: {del.profiles?.email}</p>
@@ -457,7 +538,7 @@ const ManagerDashboard = () => {
                 </div>
                 <div className="space-y-10 flex-1 overflow-y-auto no-scrollbar">
                   {activities.length === 0 ? <p className="text-xs text-[#6b7280]">No recent activity.</p> : activities.map((item, i) => (
-                    <div key={item.id} className="flex gap-5 relative">
+                    <div key={`${item.id}-${i}`} className="flex gap-5 relative">
                       <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-black' : 'bg-black/20'} mt-1.5 z-10`}></div>
                       {i < activities.length - 1 && <div className="absolute left-[3.5px] top-4 bottom-[-40px] w-px bg-black/5"></div>}
                       <div>
@@ -503,10 +584,10 @@ const ManagerDashboard = () => {
                   <p className="text-xs font-medium">No messages yet. Start the conversation!</p>
                 </div>
               ) : (
-                chatMessages.map(m => {
+                chatMessages.map((m, idx) => {
                   const isMe = m.sender_id === realUserId;
                   return (
-                    <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div key={`${m.id}-${idx}`} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className={`px-4 py-3 rounded-2xl max-w-[80%] text-sm shadow-sm ${isMe ? 'bg-black text-white rounded-tr-sm' : 'bg-zinc-100 text-[#1d1d1d] rounded-tl-sm'}`}>
                         {m.message}
                       </div>
@@ -517,21 +598,28 @@ const ManagerDashboard = () => {
                   );
                 })
               )}
+              <div ref={chatEndRef} />
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-black/5 bg-white flex gap-3 z-10">
+            <div className="p-4 border-t border-black/5 bg-white flex gap-3 z-10">
               <input
                 type="text"
                 autoFocus
                 className="flex-1 bg-zinc-100 border-none rounded-full px-5 py-3 text-sm focus:ring-0 focus:outline-none placeholder:text-zinc-400 font-medium"
                 placeholder="Type your message..."
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
               />
-              <button disabled={!newMessage.trim()} type="submit" className="w-12 h-12 flex-shrink-0 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 hover:opacity-80 transition-opacity shadow-md">
+              <button disabled={!message.trim()} onClick={handleSend} className="w-12 h-12 flex-shrink-0 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 hover:opacity-80 transition-opacity shadow-md">
                 <span className="material-symbols-outlined text-sm">send</span>
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}

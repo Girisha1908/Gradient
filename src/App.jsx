@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { getCurrentUser } from './lib/auth';
 import Hero from './components/Hero';
 import Auth from './components/Auth';
 import ManagerDashboard from './components/ManagerDashboard';
-import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import TeamPage from './pages/TeamPage';
+import UserDashboard from './components/UserDashboard';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -22,7 +24,8 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!user) {
+  // Check BOTH auth context AND localStorage as single source of truth
+  if (!user && !getCurrentUser()) {
     return <Navigate to="/auth" replace />;
   }
 
@@ -35,6 +38,7 @@ function AppRoutes() {
       <Route path="/" element={<Hero />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+      <Route path="/team" element={<ProtectedRoute><TeamPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />

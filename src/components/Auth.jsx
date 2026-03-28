@@ -42,7 +42,14 @@ const Auth = () => {
 
   const handleGoogleAuth = async () => {
     try {
-      await signInWithGoogle();
+      const data = await signInWithGoogle();
+      const user = data?.user;
+      console.log("ACTIVE SESSION:", user);
+      if (user) {
+        if (user.role === 'admin') navigate('/manager');
+        else if (user.role === 'employee') navigate('/dashboard');
+        else navigate('/');
+      }
     } catch (err) {
       setError(err.message || 'Google sign-in failed');
     }
