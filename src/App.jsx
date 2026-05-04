@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import Hero from './components/Hero';
-import Auth from './components/Auth';
-import ManagerDashboard from './components/ManagerDashboard';
+import Auth from './pages/Auth';
+import ManagerDashboard from './pages/ManagerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import TeamPage from './pages/TeamPage';
-import UserDashboard from './components/UserDashboard';
+import UserDashboard from './pages/UserDashboard';
 import ExperiencePage from './pages/ExperiencePage';
 import PortfolioPage from './pages/PortfolioPage';
 import CompletedTasksPage from './pages/CompletedTasksPage';
