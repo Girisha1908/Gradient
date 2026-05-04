@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { createTeam, addTeamMembers, fetchEmployees, insertActivityLog, getProfileByEmail, fetchTeams } from '../lib/database';
 import { getCurrentUser } from '../lib/auth';
 import { supabase } from '../lib/supabase';
@@ -46,8 +47,8 @@ export default function TeamFormation() {
 
   const handleCreateTeam = async (e) => {
     e.preventDefault();
-    if (!newTeamName.trim()) return alert("Team name is required.");
-    if (selectedTeamMembers.length === 0) return alert("Select at least one team member.");
+    if (!newTeamName.trim()) return toast.error("Team name is required.");
+    if (selectedTeamMembers.length === 0) return toast.error("Select at least one team member.");
     try {
       const team = await createTeam(newTeamName, realUserId);
       await addTeamMembers(team.id, selectedTeamMembers);
@@ -60,10 +61,10 @@ export default function TeamFormation() {
         details: newTeamName
       });
       initData();
-      alert("Team created successfully!");
+      toast.success("Team created successfully!");
     } catch (error) {
       console.error('Error creating team:', error);
-      alert("Failed to create team.");
+      toast.error("Failed to create team.");
     }
   };
 

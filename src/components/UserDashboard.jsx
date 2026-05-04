@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { uploadAttachment, submitDeliverable, insertActivityLog, fetchEmployeeAssignedTasks, getProfileByEmail, fetchTaskMessages, sendTaskMessage } from '../lib/database';
+import { uploadAttachment, submitDeliverable, insertActivityLog, fetchEmployeeAssignedTasks, getProfileByEmail, fetchTaskMessages, sendTaskMessage, fetchTaskReferences } from '../lib/database';
 import { getCurrentUser } from '../lib/auth';
 
 const VIDEO_SRC = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4";
@@ -12,9 +13,11 @@ const SARAH = "https://lh3.googleusercontent.com/aida-public/AB6AXuDH57cHCW87hbZ
 // Stats will be derived from data inside the component
 
 const sideNav = [
-  { icon: 'assignment_turned_in', label: 'My Tasks', id: 'tasks-section' },
-  { icon: 'insights', label: 'Portfolio', id: 'portfolio-section' },
-  { icon: 'settings', label: 'Settings' },
+  { icon: 'assignment_turned_in', label: 'My Tasks', route: '/dashboard' },
+  { icon: 'task_alt', label: 'Completed', route: '/completed-tasks' },
+  { icon: 'insights', label: 'Portfolio', route: '/portfolio' },
+  { icon: 'workspace_premium', label: 'Experience', route: '/experience' },
+  { icon: 'settings', label: 'Settings', route: '/settings' },
 ];
 
 const UserDashboard = () => {
@@ -24,15 +27,30 @@ const UserDashboard = () => {
   const [realUserId, setRealUserId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [timeline, setTimeline] = useState([]);
-  const [portfolio, setPortfolio] = useState([]);
   const fileInputRef = useRef(null);
   const [activeTaskId, setActiveTaskId] = useState(null);
+
+  // Link submission modal state
+  const [linkModal, setLinkModal] = useState({ open: false, taskId: null });
+  const [linkUrl, setLinkUrl] = useState('');
+
+  // Submission Confirmation Modal State
+  const [attachments, setAttachments] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Chat Modal State
   const [chatTask, setChatTask] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [message, setMessage] = useState('');
+  const [chatFile, setChatFile] = useState(null);
+  const chatFileRef = useRef(null);
   const chatEndRef = useRef(null);
+
+  // Task References State
+  const [taskRefs, setTaskRefs] = useState({});
+
+  // Unread chat notifications (employee side)
+  const [unreadTasks, setUnreadTasks] = useState({});
 
   const stats = [
     { label: 'Total Active', icon: 'assignment', value: tasks.length.toString().padStart(2, '0'), sub: 'Calculated live' },
@@ -40,21 +58,13 @@ const UserDashboard = () => {
     { label: 'Pending', icon: 'pending', value: tasks.filter(t => t.status === 'pending').length.toString().padStart(2, '0'), sub: 'Action needed' },
   ];
 
+  // ProtectedRoute guarantees user is authenticated + employee before this mounts
   useEffect(() => {
     const user = getCurrentUser();
-    console.log("ACTIVE SESSION:", user);
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      setCurrentUser(user);
     }
-    // STEP 4: Role guard — only employees can access this page
-    if (user.role !== 'employee') {
-      console.warn("SESSION CONFLICT: non-employee user on employee page, redirecting");
-      navigate('/auth');
-      return;
-    }
-    setCurrentUser(user);
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (currentUser) loadData();
@@ -70,37 +80,38 @@ const UserDashboard = () => {
       
       const assignedTasks = await fetchEmployeeAssignedTasks(mappedId);
       console.log("Fetched assigned tasks list:", assignedTasks);
-      setTasks(assignedTasks || []);
+      const activeTasks = (assignedTasks || []).filter(t => t.status !== 'completed');
+      setTasks(activeTasks);
+
+      // Fetch unread messages for each task (messages from non-employee users)
+      const unreadMap = {};
+      for (const task of activeTasks) {
+        try {
+          const { count } = await supabase
+            .from('task_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('task_id', task.id)
+            .neq('sender_id', mappedId)
+            .eq('is_read', false);
+          if (count > 0) unreadMap[task.id] = count;
+        } catch (e) { /* is_read column may not exist yet */ }
+      }
+      setUnreadTasks(unreadMap);
+
+      // Fetch reference materials for each task
+      const refsMap = {};
+      for (const task of (assignedTasks || [])) {
+        try {
+          const refs = await fetchTaskReferences(task.id);
+          if (refs.length > 0) refsMap[task.id] = refs;
+        } catch (e) {
+          // Table may not exist yet, that's fine
+        }
+      }
+      setTaskRefs(refsMap);
       
       const { data: l } = await supabase.from('activity_logs').select('*').eq('user_id', mappedId).order('created_at', { ascending: false }).limit(5);
       setTimeline(l || []);
-
-      // STEP 2 — FETCH APPROVED WORK WITH FALLBACK FOR EXISTING SCHEMA
-      let portfolioData = [];
-      try {
-        const { data, error } = await supabase
-          .from("task_deliverables")
-          .select(`
-            *,
-            tasks (title),
-            profiles!task_deliverables_verified_by_fkey(email)
-          `)
-          .eq("submitted_by", mappedId)
-          .eq("verified", true);
-          
-        if (error) throw error;
-        portfolioData = data || [];
-      } catch (err) {
-        console.warn("Verified schema not fully applied. Falling back to old query.", err);
-        const { data: legacyData } = await supabase
-          .from("task_deliverables")
-          .select('*, tasks(title)')
-          .eq("submitted_by", mappedId)
-          .eq("status", "approved");
-        portfolioData = legacyData || [];
-      }
-      
-      setPortfolio(portfolioData);
 
     } catch (e) {
       console.error("Dashboard Load Error:", e);
@@ -112,6 +123,15 @@ const UserDashboard = () => {
     try {
       const msgs = await fetchTaskMessages(task.id);
       setChatMessages(msgs);
+      // Mark messages from others as read
+      if (unreadTasks[task.id]) {
+        await supabase
+          .from('task_messages')
+          .update({ is_read: true })
+          .eq('task_id', task.id)
+          .neq('sender_id', realUserId);
+        setUnreadTasks(prev => { const n = { ...prev }; delete n[task.id]; return n; });
+      }
     } catch (e) { console.error('Error fetching messages:', e); }
   };
 
@@ -119,11 +139,12 @@ const UserDashboard = () => {
     setChatTask(null);
     setChatMessages([]);
     setMessage('');
+    setChatFile(null);
   };
 
   const handleSend = async () => {
     try {
-      if (!message.trim()) return;
+      if (!message.trim() && !chatFile) return;
 
       if (!chatTask?.id) {
         console.error("No active task");
@@ -136,8 +157,24 @@ const UserDashboard = () => {
         const user = getCurrentUser();
         senderId = await getProfileByEmail(user.email);
       }
-      await sendTaskMessage(chatTask.id, senderId, message.trim());
+      
+      let fileUrl = null;
+      if (chatFile) {
+        const fileName = `${Date.now()}-${chatFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const { data, error } = await supabase.storage.from('attachments').upload(`chat/${fileName}`, chatFile);
+        if (error) throw error;
+        fileUrl = data.path;
+      }
+
+      await sendTaskMessage(chatTask.id, senderId, message.trim(), fileUrl);
+      
+      const { data: currTask } = await supabase.from("tasks").select("unread_messages_count").eq("id", chatTask.id).single();
+      const newCount = (currTask?.unread_messages_count || 0) + 1;
+      await supabase.from("tasks").update({ has_unread_messages: true, unread_messages_count: newCount }).eq("id", chatTask.id);
+      
+      
       setMessage('');
+      setChatFile(null);
       const msgs = await fetchTaskMessages(chatTask.id);
       setChatMessages(msgs);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -165,51 +202,74 @@ const UserDashboard = () => {
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [chatTask]);
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file || !activeTaskId) return;
+    setAttachments(prev => [...prev, file]);
+    setShowConfirm(true);
+    // Reset file input so same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleFinalSubmit = async () => {
+    if (attachments.length === 0 || !activeTaskId) return;
     try {
-      const user = getCurrentUser();
-      const realUserId = await getProfileByEmail(user.email);
+      // Use Supabase auth for correct identity — never localStorage
+      const { data: authUser } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('email', authUser.user.email)
+        .single();
       
-      // Use flat path (no subdirectories) to avoid bucket policy issues
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      console.log("📎 File selected:", file.name, "Size:", file.size, "Type:", file.type);
-      console.log("📎 Upload path:", fileName);
-      
-      const uploadResult = await uploadAttachment(file, fileName);
-      console.log("📎 Upload result:", uploadResult);
-      
-      const { data: publicData } = supabase.storage.from('attachments').getPublicUrl(fileName);
-      console.log("📎 Public URL:", publicData.publicUrl);
-      
-      await submitDeliverable({
-        task_id: activeTaskId,
-        submitted_by: realUserId,
-        submission_type: 'file',
-        content_url: publicData.publicUrl
-      });
-      await insertActivityLog({ user_id: realUserId, action: 'submitted file deliverable', details: file.name });
-      alert("File deliverable submitted successfully!");
-      loadData();
-    } catch(err) {
+      if (!profile?.id) {
+        throw new Error("User profile not found");
+      }
+      const userId = profile.id;
+
+      for (const file of attachments) {
+        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        await uploadAttachment(file, fileName);
+        const { data: publicData } = supabase.storage.from('attachments').getPublicUrl(fileName);
+        await submitDeliverable({
+          task_id: activeTaskId,
+          submitted_by: userId,
+          submission_type: 'file',
+          content_url: publicData.publicUrl
+        });
+        await insertActivityLog({ user_id: userId, action: 'submitted file deliverable', details: file.name });
+      }
+
+      toast.success(`${attachments.length} file(s) submitted successfully!`);
+      setAttachments([]);
+      setShowConfirm(false);
+      // Do NOT clear activeTaskId or wipe tasks — task stays visible as pending
+      loadData(); // Refetch tasks to update delivery status indicators
+    } catch (err) {
       console.error("❌ Full upload error:", err);
-      alert("Upload failed: " + (err.message || err.error || "Unknown error. Check console."));
+      toast.error("Upload failed: " + (err.message || err.error || "Unknown error."));
     }
   };
 
-  const submitLink = async (taskId) => {
-     const url = window.prompt("Enter deliverable URL (Figma, Drive, Hashnode, etc.):");
-     if (!url) return;
+  const submitLink = async () => {
+     if (!linkUrl.trim() || !linkModal.taskId) return;
      try {
-       const user = getCurrentUser();
-       const mappedId = await getProfileByEmail(user.email);
-       await submitDeliverable({ task_id: taskId, submitted_by: mappedId, submission_type: 'link', content_url: url });
-       await insertActivityLog({ user_id: mappedId, action: 'submitted link deliverable', details: url });
-       alert("Link deliverable submitted successfully!");
+       const { data: authUser } = await supabase.auth.getUser();
+       const { data: profile } = await supabase.from('profiles').select('id').eq('email', authUser.user.email).single();
+       if (!profile?.id) throw new Error("User profile not found");
+       await submitDeliverable({ task_id: linkModal.taskId, submitted_by: profile.id, submission_type: 'link', content_url: linkUrl.trim() });
+       await insertActivityLog({ user_id: profile.id, action: 'submitted link deliverable', details: linkUrl.trim() });
+       toast.success("Link deliverable submitted!");
+       setLinkModal({ open: false, taskId: null });
+       setLinkUrl('');
        loadData();
      } catch (e) {
        console.error(e);
+       toast.error("Submission failed.");
      }
   };
 
@@ -222,25 +282,7 @@ const UserDashboard = () => {
     return "submitted";
   };
 
-  // STEP 4 — OPEN FILE
-  const handleOpenPortfolio = (item) => {
-    const type = item.submission_type || item.type;
-    const content = item.content_url || item.content;
-    
-    if (type === "link") {
-      window.open(content, "_blank");
-    } else {
-      // Check if it's already a full HTTP URL (which we save via PublicUrl logic locally)
-      if (content.startsWith("http")) {
-         window.open(content, "_blank");
-      } else {
-         const { data } = supabase.storage
-           .from("attachments")
-           .getPublicUrl(content);
-         window.open(data.publicUrl, "_blank");
-      }
-    }
-  };
+  // NO PORTFOLIO CODE NEEDED
 
   return (
     <div className="bg-[#fafafa] text-[#1d1d1d] min-h-screen" style={{ fontFamily: "'Geist Sans', sans-serif" }}>
@@ -266,8 +308,12 @@ const UserDashboard = () => {
             <button 
               key={i.label} 
               onClick={() => {
-                const el = document.getElementById(i.id);
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (i.route) {
+                  navigate(i.route);
+                } else {
+                  const el = document.getElementById(i.id);
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }}
               className="flex items-center gap-4 py-3.5 px-5 text-[#71717a] hover:text-[#1d1d1d] transition-all group w-full text-left"
             >
@@ -329,9 +375,16 @@ const UserDashboard = () => {
                     return (
                     <div key={`${t.id}-${idx}`} className="group p-6 rounded-2xl border border-black/[0.03] bg-white/50 hover:bg-white hover:border-black transition-all flex items-center justify-between shadow-sm hover:shadow-md">
                       <div className="flex items-start gap-5">
-                        <button onClick={() => openChat(t)} className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-[#1d1d1d] hover:bg-black hover:text-white transition-all shadow-sm">
-                          <span className="material-symbols-outlined text-[14px]">chat</span>
-                        </button>
+                        <div className="relative">
+                          <button onClick={() => openChat(t)} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${unreadTasks[t.id] ? 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-zinc-100 text-[#1d1d1d] hover:bg-black hover:text-white'}`}>
+                            <span className="material-symbols-outlined text-[14px]">chat</span>
+                          </button>
+                          {unreadTasks[t.id] && (
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 rounded-full border-2 border-white text-[8px] font-bold text-white flex items-center justify-center z-10 box-content">
+                              {unreadTasks[t.id]}
+                            </span>
+                          )}
+                        </div>
                         <div className={`mt-1.5 w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${status === 'approved' ? 'bg-green-500 border-green-500' : status === 'submitted' ? 'bg-black border-black' : 'border-black/10 transition-transform'}`}>
                            <span className={`material-symbols-outlined text-[10px] text-white ${status !== 'pending' ? 'scale-100' : 'scale-0 transition-transform'}`}>check</span>
                         </div>
@@ -342,6 +395,16 @@ const UserDashboard = () => {
                             <span className="w-1.5 h-1.5 rounded-full bg-black/5"></span>
                             <p className="text-[#6b7280] text-[10px] font-bold uppercase tracking-widest opacity-40">Priority: {t.priority}</p>
                           </div>
+                          {taskRefs[t.id] && taskRefs[t.id].length > 0 && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="material-symbols-outlined text-[12px] text-[#6b7280] opacity-50">attach_file</span>
+                              {taskRefs[t.id].map((ref, ri) => (
+                                <a key={ri} href={ref.file_url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-[#373a46] border-b border-[#373a46]/30 hover:border-[#373a46] transition-colors">
+                                  {ref.file_name}
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -352,7 +415,7 @@ const UserDashboard = () => {
                             <span className="px-5 py-2.5 text-black text-[10px] font-bold uppercase tracking-widest">Under Review</span>
                           ) : (
                             <>
-                              <button onClick={() => submitLink(t.id)} className="px-5 py-2.5 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity">Submit Link</button>
+                              <button onClick={() => setLinkModal({ open: true, taskId: t.id })} className="px-5 py-2.5 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity">Submit Link</button>
                               <button onClick={() => { setActiveTaskId(t.id); fileInputRef.current?.click(); }} className="px-5 py-2.5 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all">Upload File</button>
                             </>
                           )}
@@ -360,64 +423,6 @@ const UserDashboard = () => {
                       </div>
                     </div>
                   )})}
-                </div>
-              </section>
-              <section className="bg-white p-12 rounded-[3rem] border border-[#f4f4f5] shadow-[0px_20px_50px_rgba(0,0,0,0.03)] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-100/50 blur-[100px] rounded-full -mr-20 -mt-20"></div>
-                <div className="flex gap-8 items-start relative z-10">
-                  <img alt="Sarah Jenkins" className="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover" src={SARAH} />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4"><span className="font-bold text-[15px]">System</span><span className="text-[11px] font-bold text-[#71717a] uppercase tracking-widest opacity-40">• Admin Broadcast</span></div>
-                    <p className="leading-relaxed text-2xl font-medium tracking-tight font-serif italic">"Ensure all deliverables are submitted promptly to be included in the Sprint Review cycles. Task uploads are logged sequentially."</p>
-                  </div>
-                </div>
-              </section>
-
-              {/* STEP 3 — DISPLAY EMPLOYEE PORTFOLIO */}
-              <section id="portfolio-section" className="bg-white p-12 rounded-[3rem] border border-[#f4f4f5] shadow-[0px_20px_50px_rgba(0,0,0,0.03)] focus-within:ring-2 ring-black/5">
-                <div className="flex items-center gap-5 mb-12">
-                  <div className="w-11 h-11 rounded-full bg-black flex items-center justify-center text-white"><span className="material-symbols-outlined text-[18px]">verified</span></div>
-                  <h3 className="text-2xl font-medium tracking-tight">Proof of Work <span className="font-serif italic">Portfolio</span></h3>
-                </div>
-                <div className="space-y-6">
-                  {portfolio.length === 0 ? <p className="text-sm text-[#71717a] py-10 text-center italic opacity-60">Your portfolio is currently empty. Complete tasks to build it.</p> : portfolio.map((item, idx) => (
-                    <div key={`${item.id}-${idx}`} className="group p-6 rounded-2xl border border-black/[0.03] bg-white/50 flex flex-col md:flex-row md:items-start justify-between shadow-sm hover:shadow-md transition-all gap-4">
-                      <div>
-                        <div className="flex items-center gap-3 mb-3">
-                          <h4 className="font-semibold text-[15px]">{item.tasks?.title}</h4>
-                          <span className={`verified-badge px-3 py-1 ${item.verified ? 'bg-black text-white' : 'bg-zinc-100 text-[#71717a]'} rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 shadow-sm`}>
-                            <span className="material-symbols-outlined text-[10px]">{item.verified ? 'verified' : 'check_circle'}</span> {item.verified ? 'Verified' : 'Approved'}
-                          </span>
-                        </div>
-                        <div className="text-[#6b7280] text-[11px] font-medium leading-relaxed max-w-lg space-y-2">
-                          <p className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[12px] opacity-70">domain</span>
-                            Verified by <span className="font-bold text-[#1d1d1d]">{item.company_name || 'Standardized Global (SGG)'}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[12px] opacity-70">person</span>
-                            Reviewed by <span className="font-bold text-[#1d1d1d]">{item.profiles?.email || 'System Administrator'}</span>
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[12px] opacity-70">event</span>
-                            Completed on <span className="font-bold text-[#1d1d1d]">{new Date(item.verified_at || item.reviewed_at || item.created_at).toLocaleDateString()}</span>
-                          </p>
-                          <p className="flex items-center gap-2 mt-3 pt-3 border-t border-black/5">
-                            <span className="material-symbols-outlined text-[12px] opacity-70">comment</span>
-                            <span className="font-bold text-[#1d1d1d]">Feedback:</span> {item.feedback || "Approved with no issues."}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0 self-center">
-                        <button onClick={() => handleOpenPortfolio(item)} className="px-5 py-2.5 bg-zinc-100 text-[#1d1d1d] rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[14px]">
-                            {item.submission_type === 'link' ? 'link' : 'download'}
-                          </span>
-                          View Work
-                        </button>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </section>
             </div>
@@ -484,7 +489,15 @@ const UserDashboard = () => {
                   return (
                     <div key={`${m.id}-${idx}`} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className={`px-4 py-3 rounded-2xl max-w-[80%] text-sm shadow-sm ${isMe ? 'bg-black text-white rounded-tr-sm' : 'bg-zinc-100 text-[#1d1d1d] rounded-tl-sm'}`}>
-                        {m.message}
+                        {m.message && <div className="mb-1">{m.message}</div>}
+                        {m.file_url && (
+                          <button onClick={() => {
+                            const { data } = supabase.storage.from("attachments").getPublicUrl(m.file_url);
+                            window.open(data.publicUrl, "_blank");
+                          }} className={`flex items-center gap-2 px-3 py-1.5 rounded border text-xs mt-2 transition-all ${isMe ? 'bg-white/10 border-white/20 hover:bg-white/20 text-white' : 'bg-black/5 border-black/10 hover:bg-black/10 text-black'}`}>
+                            <span className="material-symbols-outlined text-[14px]">attach_file</span> View Attachment
+                          </button>
+                        )}
                       </div>
                       <span className="text-[9px] font-bold text-zinc-400 mt-1.5 uppercase tracking-widest px-1">
                         {isMe ? 'You' : m.profiles?.email} • {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -496,7 +509,15 @@ const UserDashboard = () => {
               <div ref={chatEndRef} />
             </div>
 
-            <div className="p-4 border-t border-black/5 bg-white flex gap-3 z-10">
+            <div className="p-4 border-t border-black/5 bg-white flex gap-3 z-10 items-center">
+              <input type="file" ref={chatFileRef} className="hidden" onChange={(e) => setChatFile(e.target.files[0])} />
+              <button 
+                onClick={() => chatFileRef.current?.click()} 
+                className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center transition-all ${chatFile ? 'bg-black text-white shadow-md' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+                title={chatFile ? chatFile.name : "Attach file"}
+              >
+                <span className="material-symbols-outlined text-sm">attach_file</span>
+              </button>
               <input
                 type="text"
                 autoFocus
@@ -511,9 +532,90 @@ const UserDashboard = () => {
                   }
                 }}
               />
-              <button disabled={!message.trim()} onClick={handleSend} className="w-12 h-12 flex-shrink-0 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 hover:opacity-80 transition-opacity shadow-md">
+              <button disabled={!message.trim() && !chatFile} onClick={handleSend} className="w-12 h-12 flex-shrink-0 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-30 hover:opacity-80 transition-opacity shadow-md">
                 <span className="material-symbols-outlined text-sm">send</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submission Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-black/5 animate-fade-in">
+            <div className="p-6 border-b border-black/5 bg-zinc-50">
+              <h3 className="font-bold tracking-tight text-lg">Confirm Submission</h3>
+              <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-1">Review your files before submitting</p>
+            </div>
+            <div className="p-6 space-y-3 max-h-[300px] overflow-y-auto">
+              {attachments.length === 0 ? (
+                <p className="text-sm text-zinc-400 text-center py-6 italic">No files selected yet.</p>
+              ) : (
+                attachments.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-black/[0.03]">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="material-symbols-outlined text-sm text-zinc-500">description</span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold tracking-tight truncate">{f.name}</p>
+                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{(f.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                    </div>
+                    <button onClick={() => removeAttachment(i)} className="w-7 h-7 rounded-full bg-red-50 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center transition-all flex-shrink-0">
+                      <span className="material-symbols-outlined text-[12px]">close</span>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="p-5 border-t border-black/5 flex gap-3">
+              <button
+                onClick={() => { setShowConfirm(false); fileInputRef.current?.click(); }}
+                className="flex-1 py-3 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 transition-all"
+              >Add More</button>
+              <button
+                onClick={() => { setShowConfirm(false); setAttachments([]); setActiveTaskId(null); }}
+                className="py-3 px-5 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 transition-all text-zinc-500"
+              >Cancel</button>
+              <button
+                onClick={handleFinalSubmit}
+                disabled={attachments.length === 0}
+                className="flex-1 py-3 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity disabled:opacity-30"
+              >Submit {attachments.length > 0 && `(${attachments.length})`}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link Submission Modal */}
+      {linkModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-black/5">
+            <div className="p-6 border-b border-black/5 bg-zinc-50">
+              <h3 className="font-bold tracking-tight text-lg">Submit Deliverable Link</h3>
+              <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-1">Paste your Figma, Drive, or project URL</p>
+            </div>
+            <div className="p-6">
+              <input
+                type="url"
+                placeholder="https://..."
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submitLink()}
+                className="w-full p-4 bg-zinc-50 border border-black/[0.04] rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-black/10 placeholder:text-zinc-400 font-medium"
+                autoFocus
+              />
+            </div>
+            <div className="p-5 border-t border-black/5 flex gap-3">
+              <button
+                onClick={() => { setLinkModal({ open: false, taskId: null }); setLinkUrl(''); }}
+                className="flex-1 py-3 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 transition-all text-zinc-500"
+              >Cancel</button>
+              <button
+                onClick={submitLink}
+                disabled={!linkUrl.trim()}
+                className="flex-1 py-3 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity disabled:opacity-30"
+              >Submit Link</button>
             </div>
           </div>
         </div>

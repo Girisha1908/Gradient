@@ -1,9 +1,9 @@
 // ─── SINGLE SOURCE OF TRUTH FOR USER SESSION ───
-// Only localStorage defines the logged-in user.
+// Only sessionStorage defines the logged-in user (tab-isolated).
 // Database must NEVER override user identity.
 
 export function getCurrentUser() {
-  const saved = localStorage.getItem("user");
+  const saved = sessionStorage.getItem("user");
   if (!saved) return null;
   try {
     return JSON.parse(saved);

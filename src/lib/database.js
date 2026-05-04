@@ -81,11 +81,15 @@ export const updateTask = async (id, updates) => {
 
 // ─── DELETE TASK (cascade) ──────────────
 export const deleteTask = async (taskId) => {
-  // 1. Delete all assignments for this task
+  // 1. Delete all messages for this task
+  await supabase.from('task_messages').delete().eq('task_id', taskId);
+  // 2. Delete all reference materials for this task
+  await supabase.from('task_references').delete().eq('task_id', taskId);
+  // 3. Delete all assignments for this task
   await supabase.from('task_assignments').delete().eq('task_id', taskId);
-  // 2. Delete all deliverables for this task
+  // 4. Delete all deliverables for this task
   await supabase.from('task_deliverables').delete().eq('task_id', taskId);
-  // 3. Delete the task itself
+  // 5. Delete the task itself
   const { error } = await supabase.from('tasks').delete().eq('id', taskId);
   if (error) throw error;
 };
@@ -116,9 +120,9 @@ export const uploadAttachment = async (file, path) => {
 };
 
 // ─── USER ───────────────────────────────
-// getCurrentUser: ONLY reads from localStorage — never overrides identity from DB
+// fetchCurrentUser: ONLY reads from sessionStorage (tab-isolated) — never overrides identity from DB
 export const fetchCurrentUser = () => {
-  const savedUser = localStorage.getItem('user');
+  const savedUser = sessionStorage.getItem('user');
   if (!savedUser) return null;
   return JSON.parse(savedUser);
 };
@@ -209,11 +213,12 @@ export const fetchTaskMessages = async (taskId) => {
   return data;
 };
 
-export const sendTaskMessage = async (taskId, senderId, message) => {
+export const sendTaskMessage = async (taskId, senderId, message, file_url = null) => {
   const { data, error } = await supabase.from('task_messages').insert({
     task_id: taskId,
     sender_id: senderId,
-    message: message
+    message: message,
+    file_url: file_url
   });
   if (error) throw error;
   return data;
@@ -257,4 +262,53 @@ export const fetchTeams = async () => {
     `);
   if (error) throw error;
   return data;
+};
+
+// ─── EXPERIENCE RECORDS ─────────────────
+export const generateExperienceRecord = async (record) => {
+  const { data, error } = await supabase
+    .from('experience_records')
+    .insert(record)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const fetchExperienceRecords = async (userId) => {
+  const { data, error } = await supabase
+    .from('experience_records')
+    .select('*, profiles:generated_by(email)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const fetchAllExperienceRecords = async () => {
+  const { data, error } = await supabase
+    .from('experience_records')
+    .select('*, profiles:user_id(email), manager:generated_by(email)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const updateExperienceRecord = async (id, updates) => {
+  const { data, error } = await supabase
+    .from('experience_records')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+  return data;
+};
+
+// ─── TASK REFERENCES (Manager Attachments) ──
+export const fetchTaskReferences = async (taskId) => {
+  const { data, error } = await supabase
+    .from('task_references')
+    .select('*')
+    .eq('task_id', taskId);
+  if (error) throw error;
+  return data || [];
 };

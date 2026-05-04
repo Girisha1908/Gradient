@@ -4,11 +4,19 @@ import { devUsers } from '../lib/devUsers';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize synchronously from sessionStorage to prevent flash redirect on refresh
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = sessionStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
+    const savedUser = sessionStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -18,10 +26,10 @@ export const AuthProvider = ({ children }) => {
   const signInWithEmail = async (email, password) => {
     const devUser = devUsers[email];
     if (devUser) {
-      // STEP 5: Reset session before setting new user — prevent cross-user contamination
-      localStorage.removeItem('user');
+      // Reset session before setting new user — prevent cross-user contamination
+      sessionStorage.removeItem('user');
       const userData = { ...devUser, email };
-      localStorage.setItem('user', JSON.stringify(userData));
+      sessionStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       console.log("ACTIVE SESSION:", userData);
       return { user: userData };
@@ -36,19 +44,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signInWithGoogle = async () => {
-    // STEP 5: Reset session before setting new user
-    localStorage.removeItem('user');
+    // Reset session before setting new user
+    sessionStorage.removeItem('user');
     // Default to manager for google dev login
     const devUser = devUsers['anamalagirisha@gmail.com'];
     const userData = { ...devUser, email: 'anamalagirisha@gmail.com' };
-    localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     console.log("ACTIVE SESSION:", userData);
     return { user: userData };
   };
 
   const signOut = async () => {
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     setUser(null);
   };
 

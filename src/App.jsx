@@ -1,16 +1,23 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { getCurrentUser } from './lib/auth';
 import Hero from './components/Hero';
 import Auth from './components/Auth';
 import ManagerDashboard from './components/ManagerDashboard';
-import AdminDashboard from './components/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import TeamPage from './pages/TeamPage';
 import UserDashboard from './components/UserDashboard';
+import ExperiencePage from './pages/ExperiencePage';
+import PortfolioPage from './pages/PortfolioPage';
+import CompletedTasksPage from './pages/CompletedTasksPage';
+import ReviewPage from './pages/ReviewPage';
+import PublicProfilePage from './pages/PublicProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
-// Protected Route wrapper
-const ProtectedRoute = ({ children }) => {
+// Central Protected Route — single source of truth for auth + role guards
+// role prop is optional: if omitted, any logged-in user can access
+const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -24,9 +31,15 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // Check BOTH auth context AND localStorage as single source of truth
-  if (!user && !getCurrentUser()) {
+  // No session → auth page
+  if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Role mismatch → correct dashboard (NEVER to /auth)
+  if (role && user.role !== role) {
+    const dest = user.role === 'superadmin' ? '/admin' : user.role === 'admin' ? '/manager' : '/dashboard';
+    return <Navigate to={dest} replace />;
   }
 
   return children;
@@ -37,10 +50,16 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Hero />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+      <Route path="/manager" element={<ProtectedRoute role="admin"><ManagerDashboard /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><TeamPage /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute role="employee"><UserDashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute role="superadmin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/experience" element={<ProtectedRoute><ExperiencePage /></ProtectedRoute>} />
+      <Route path="/portfolio" element={<ProtectedRoute role="employee"><PortfolioPage /></ProtectedRoute>} />
+      <Route path="/completed-tasks" element={<ProtectedRoute><CompletedTasksPage /></ProtectedRoute>} />
+      <Route path="/review" element={<ProtectedRoute role="admin"><ReviewPage /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+      <Route path="/profile/:username" element={<PublicProfilePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -50,6 +69,28 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#1d1d1d',
+              color: '#fff',
+              borderRadius: '1rem',
+              fontSize: '13px',
+              fontWeight: 600,
+              letterSpacing: '0.01em',
+              padding: '14px 20px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            },
+            success: {
+              iconTheme: { primary: '#22c55e', secondary: '#fff' },
+            },
+            error: {
+              iconTheme: { primary: '#ef4444', secondary: '#fff' },
+            },
+          }}
+        />
         <AppRoutes />
       </AuthProvider>
     </Router>

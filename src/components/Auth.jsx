@@ -31,7 +31,8 @@ const Auth = () => {
         await saveProfile(user.id, user.email);
         await saveUserRole(user.id, user.role);
 
-        if (user.role === 'admin') navigate('/manager');
+        if (user.role === 'superadmin') navigate('/admin');
+        else if (user.role === 'admin') navigate('/manager');
         else if (user.role === 'employee') navigate('/dashboard');
         else navigate('/');
       }
@@ -46,7 +47,8 @@ const Auth = () => {
       const user = data?.user;
       console.log("ACTIVE SESSION:", user);
       if (user) {
-        if (user.role === 'admin') navigate('/manager');
+        if (user.role === 'superadmin') navigate('/admin');
+        else if (user.role === 'admin') navigate('/manager');
         else if (user.role === 'employee') navigate('/dashboard');
         else navigate('/');
       }
@@ -136,6 +138,15 @@ const Auth = () => {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
                   </svg>
                   <span className="text-[11px] geist-medium uppercase tracking-widest text-[#373a46]">Sign in with Google</span>
+                </button>
+                <div className="my-6 flex items-center gap-4">
+                  <div className="flex-grow h-px bg-black/5"></div>
+                  <span className="text-[10px] geist-medium uppercase tracking-[0.2em] text-[#373a46]/40 whitespace-nowrap">admin access</span>
+                  <div className="flex-grow h-px bg-black/5"></div>
+                </div>
+                <button onClick={() => { signInWithEmail('admin@gradient.com', 'admin').then(data => { if (data?.user) navigate('/admin'); }); }} className="w-full flex items-center justify-center gap-3 bg-zinc-900 text-white py-4 rounded-2xl hover:bg-black transition-all duration-300 group" type="button">
+                  <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: '"FILL" 0, "wght" 300' }}>shield_person</span>
+                  <span className="text-[11px] geist-medium uppercase tracking-widest">Sign in as Admin</span>
                 </button>
                 <div className="flex justify-center mt-6 text-[11px] geist-medium uppercase tracking-widest">
                   <a className="text-[#373a46]/40 hover:text-black transition-colors" href="#">Forgot Access?</a>
