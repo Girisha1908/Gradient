@@ -5,6 +5,12 @@ export const devUsers = {
     email: "admin@gradient.com",
     name: "System Admin"
   },
+  "anamalageetika@gmail.com": {
+    id: "00000000-0000-0000-0000-000000000005",
+    role: "superadmin",
+    email: "anamalageetika@gmail.com",
+    name: "Geetika"
+  },
   "anamalagirisha@gmail.com": {
     id: "00000000-0000-0000-0000-000000000001",
     role: "admin",

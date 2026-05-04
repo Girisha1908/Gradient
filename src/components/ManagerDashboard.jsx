@@ -40,6 +40,9 @@ const ManagerDashboard = () => {
   const chatFileRef = useRef(null);
   const chatEndRef = useRef(null);
 
+  // Preview modal state
+  const [previewFile, setPreviewFile] = useState(null);
+
   // Delete confirmation modal state
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, taskId: null, taskTitle: '' });
 
@@ -100,6 +103,10 @@ const ManagerDashboard = () => {
       setActivities(await fetchActivityLogs());
       const teamsData = await fetchTeams() || [];
       setTeams(teamsData);
+
+      // Calculate total unread messages for the header badge
+      const totalUnread = safeTasks.reduce((sum, t) => sum + (t.unread_messages_count || 0), 0);
+      setMetrics(prev => ({ ...prev, totalUnread }));
 
       // Team Analytics moved to Team Page
     } catch (e) {
@@ -247,6 +254,12 @@ const ManagerDashboard = () => {
     setChatFile(null);
   };
 
+  const openPreview = (url, name) => {
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url) || /\.(jpg|jpeg|png|gif|webp)$/i.test(name);
+    const isPDF = url.toLowerCase().endsWith('.pdf') || name.toLowerCase().endsWith('.pdf');
+    setPreviewFile({ url, name, isImage, isPDF });
+  };
+
   const handleSend = async () => {
     try {
       if (!message.trim() && !chatFile) return;
@@ -298,8 +311,29 @@ const ManagerDashboard = () => {
         })
         .subscribe();
     }
-    return () => { if (channel) supabase.removeChannel(channel); };
-  }, [chatTask]);
+    
+    // Global listener for new messages and status updates to update badges
+    const globalChannel = supabase.channel('mgr_global_notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_messages' }, (payload) => {
+        // Refresh on new messages from others or when messages are marked as read/unread
+        if (payload.new?.sender_id !== realUserId || payload.old?.is_read !== payload.new?.is_read) {
+          loadData();
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tasks' }, (payload) => {
+        // Refresh when task unread status changes
+        if (payload.old.has_unread_messages !== payload.new.has_unread_messages || 
+            payload.old.unread_messages_count !== payload.new.unread_messages_count) {
+          loadData();
+        }
+      })
+      .subscribe();
+
+    return () => { 
+      if (channel) supabase.removeChannel(channel); 
+      supabase.removeChannel(globalChannel);
+    };
+  }, [chatTask, realUserId]);
 
   const currentEmail = currentUser?.email || 'admin@kinetic.com';
 
@@ -356,6 +390,24 @@ const ManagerDashboard = () => {
           <h1 className="text-2xl font-medium">Manager <span className="font-serif italic font-normal">Dashboard</span></h1>
         </div>
         <div className="flex items-center gap-6">
+          {/* Total Unread Messages Badge */}
+          <div className="relative group cursor-pointer" onClick={() => {
+            const firstUnread = metrics.data?.find(t => t.has_unread_messages);
+            if (firstUnread) openChat(firstUnread);
+          }}>
+            <span className="material-symbols-outlined text-[#373a46]/60 group-hover:text-[#373a46] transition-colors">chat_bubble</span>
+            {metrics.totalUnread > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[8px] font-bold text-white flex items-center justify-center animate-pulse">
+                {metrics.totalUnread}
+              </span>
+            )}
+          </div>
+          <div className="relative group cursor-pointer">
+            <span className="material-symbols-outlined text-[#373a46]/60 group-hover:text-[#373a46] transition-colors">notifications</span>
+            {metrics.totalUnread > 0 && (
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
+            )}
+          </div>
           <div className="flex items-center gap-3 pl-4 border-l border-black/[0.05]">
              <div className="w-9 h-9 rounded-full border border-black/5 bg-[#1d1d1d] text-white flex items-center justify-center font-bold text-xs">A</div>
             <div className="hidden lg:block">
@@ -585,9 +637,9 @@ const ManagerDashboard = () => {
                         {m.file_url && (
                           <button onClick={() => {
                             const { data } = supabase.storage.from("attachments").getPublicUrl(m.file_url);
-                            window.open(data.publicUrl, "_blank");
+                            openPreview(data.publicUrl, m.file_url);
                           }} className={`flex items-center gap-2 px-3 py-1.5 rounded border text-xs mt-2 transition-all ${isMe ? 'bg-white/10 border-white/20 hover:bg-white/20 text-white' : 'bg-black/5 border-black/10 hover:bg-black/10 text-black'}`}>
-                            <span className="material-symbols-outlined text-[14px]">attach_file</span> View Attachment
+                            <span className="material-symbols-outlined text-[14px]">visibility</span> Preview Attachment
                           </button>
                         )}
                       </div>
@@ -653,6 +705,47 @@ const ManagerDashboard = () => {
                 onClick={handleDeleteTask}
                 className="flex-1 py-3 bg-red-500 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-red-600 transition-colors"
               >Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* File Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-6">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-5xl h-[85vh] shadow-2xl overflow-hidden flex flex-col border border-white/20">
+            <div className="p-6 border-b border-black/5 flex justify-between items-center bg-zinc-50/50">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-zinc-400">description</span>
+                <div>
+                  <h3 className="font-bold tracking-tight text-sm truncate max-w-md">{previewFile.name}</h3>
+                  <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest mt-0.5">Secure Preview Mode</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <a href={previewFile.url} download className="flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all">
+                  <span className="material-symbols-outlined text-sm">download</span> Download
+                </a>
+                <button onClick={() => setPreviewFile(null)} className="w-10 h-10 flex items-center justify-center rounded-full bg-black text-white hover:opacity-80 transition-opacity">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 bg-zinc-100/30 overflow-hidden flex items-center justify-center p-4">
+              {previewFile.isImage ? (
+                <img src={previewFile.url} alt="Preview" className="max-w-full max-h-full object-contain shadow-lg rounded-xl" />
+              ) : previewFile.isPDF ? (
+                <iframe src={`${previewFile.url}#toolbar=0`} className="w-full h-full rounded-xl shadow-lg border-0 bg-white" title="PDF Preview" />
+              ) : (
+                <div className="text-center p-12 bg-white rounded-3xl shadow-xl border border-black/5 max-w-sm">
+                  <span className="material-symbols-outlined text-6xl text-zinc-200 mb-6 block">draft</span>
+                  <h4 className="text-lg font-bold mb-2">Preview unavailable</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed mb-6">This file type cannot be previewed directly. Please download the file to view its contents.</p>
+                  <a href={previewFile.url} download className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full text-[11px] font-bold uppercase tracking-widest">
+                    Download File
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
